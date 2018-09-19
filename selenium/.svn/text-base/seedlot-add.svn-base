@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="" />
+<title>seedlot-add</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">seedlot-add</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/inventory/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Browse items</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>item/index_q</td>
+	<td>Tsel-1</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>item/index_0</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>link=TSel-1</td>
+	<td>TSel-1</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=TSel-1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//div[@id='main']/p/a[1]/b</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>register_lot_quantity</td>
+	<td>100</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>register_lot_container</td>
+	<td>label=Alluminium foil</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>register_lot_weight</td>
+	<td>100</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>register_lot_weight100</td>
+	<td>100</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>register_lot_moistureContent</td>
+	<td>70</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>register_lot_notes</td>
+	<td>Selenium Seed Lot</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>register_0</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//div[@id='main']/table/tbody/tr/td[2]</td>
+	<td>INITIAL</td>
+</tr>
+</tbody></table>
+</body>
+</html>

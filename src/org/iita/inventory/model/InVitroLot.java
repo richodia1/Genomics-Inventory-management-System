@@ -1,0 +1,159 @@
+/**
+ * 
+ */
+package org.iita.inventory.model;
+
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
+import org.hibernate.search.annotations.Indexed;
+
+/**
+ * @author mobreza
+ * 
+ */
+@Entity
+@Indexed
+public class InVitroLot extends Lot {
+	private static final long serialVersionUID = 8484554688573833932L;
+	/**
+	 * Available UOMs for Invitro lots 
+	 */
+	private static final String[] INVITRO_UOMS = new String[] { "tube" };
+
+	/** Regeneration date */
+	private Date regenerationDate;
+
+	/** Virus free */
+	private Boolean virusFree;
+
+	/** Introduction to genebank */
+	private Date introductionDate;
+	
+	/** Germplasm origin */
+	private String origin;
+
+	private String invitroStatus;
+	private String originExplant;
+	
+	/**
+	 * @return the invitroStatus
+	 */
+	public String getInvitroStatus() {
+		return invitroStatus;
+	}
+
+	/**
+	 * @param invitroStatus the invitroStatus to set
+	 */
+	public void setInvitroStatus(String invitroStatus) {
+		this.invitroStatus = invitroStatus;
+	}
+
+	/**
+	 * @return the originExplant
+	 */
+	public String getOriginExplant() {
+		return originExplant;
+	}
+
+	/**
+	 * @param originExplant the originExplant to set
+	 */
+	public void setOriginExplant(String originExplant) {
+		this.originExplant = originExplant;
+	}
+
+	/**
+	 * @return the introductionDate
+	 */
+	@Column
+	public Date getIntroductionDate() {
+		return this.introductionDate;
+	}
+
+	/**
+	 * @param introductionDate the introductionDate to set
+	 */
+	public void setIntroductionDate(Date introductionDate) {
+		this.introductionDate = introductionDate;
+	}
+
+	@Column(nullable = true, length = 20, name = "germplasmOrigin")
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
+	}
+
+	/**
+	 * @return the regenerationDate
+	 */
+	public Date getRegenerationDate() {
+		return this.regenerationDate;
+	}
+
+	/**
+	 * @param regenerationDate the regenerationDate to set
+	 */
+	public void setRegenerationDate(Date regenerationDate) {
+		this.regenerationDate = regenerationDate;
+	}
+
+	/**
+	 * @return the virusFree
+	 */
+	public Boolean getVirusFree() {
+		return this.virusFree;
+	}
+
+	/**
+	 * @param virusFree the virusFree to set
+	 */
+	public void setVirusFree(Boolean virusFree) {
+		this.virusFree = virusFree;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		String x = super.toString();
+		if (this.regenerationDate != null)
+			x += " regenerated " + this.regenerationDate;
+		if (this.virusFree != null)
+			x += " VF";
+		return x;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.iita.inventory.model.Lot#copyFrom(org.iita.inventory.model.Lot)
+	 */
+	@Override
+	public void copyFrom(Lot lot) {
+		super.copyFrom(lot);
+		if (lot instanceof InVitroLot) {
+			InVitroLot other = (InVitroLot) lot;
+			this.regenerationDate = other.regenerationDate;
+			this.virusFree = other.virusFree;
+			this.origin=other.origin;
+			this.introductionDate=other.introductionDate;
+		}
+	}
+	
+	@Override
+	@Transient
+	public String[] getUoms() {
+		return INVITRO_UOMS;
+	}
+}

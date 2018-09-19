@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:amq="http://activemq.apache.org/schema/core" xmlns:jms="http://www.springframework.org/schema/jms"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+    http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+    http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd 
+    http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-2.5.xsd">
+
+	<!-- CXF -->
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+	<bean id="inventoryService" class="org.iita.inventory.remote.service.InventoryServiceImpl" scope="prototype">
+		<property name="lotService" ref="lotService" />
+		<property name="variablesService" ref="variablesService" />
+		<property name="lotVariableService" ref="lotVariableService" />
+		<property name="lotVariableUpdateService" ref="lotVariableUpdateService" />
+		<property name="locationService" ref="locationService" />
+		<property name="selectionService" ref="selectionService" />
+		<property name="quantityUpdateService" ref="quantityUpdateService" />
+		<property name="lotSubtypeUpdateService" ref="lotSubtypeUpdateService" />
+		<property name="lotLocationMigrationUpdateService" ref="locMigUpdateService" />
+	</bean>
+
+	<jaxws:endpoint id="inventoryEndpoint" implementorClass="org.iita.inventory.remote.service.InventoryServiceImpl" implementor="#inventoryService"
+		serviceName="Inventory" address="/inventory">
+		<jaxws:inInterceptors>
+			<bean class="org.apache.cxf.binding.soap.saaj.SAAJInInterceptor" />
+			<bean class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
+				<constructor-arg>
+					<map>
+						<entry key="action" value="UsernameToken Timestamp" />
+						<entry key="passwordType" value="PasswordText" />
+						<entry key="passwordCallbackRef" value-ref="springSecurityHandler" />
+						<entry key="signatureConfirmation" value="false" />
+						<entry key="enableSignatureConfirmation" value="false" />
+					</map>
+				</constructor-arg>
+				<property name="ignoreActions" value="true" />
+			</bean>
+		</jaxws:inInterceptors>
+	</jaxws:endpoint>
+
+	<bean id="springSecurityHandler" class="org.iita.inventory.remote.service.XXX">
+		<property name="userDetailsService" ref="userService" />
+		<property name="ldapAuthenticationService" ref="ldapUserService" />
+	</bean>
+
+
+	<!-- 
+		JMS configuration
+	 -->
+	<bean id="orderJMSReceiver" class="org.iita.inventory.remote.OrderJMSReceiver">
+		<constructor-arg ref="itemService" />
+		<constructor-arg ref="applicationLogic" />
+	</bean>
+
+	<jms:listener-container connection-factory="jmsConnectionFactory" acknowledge="transacted" concurrency="1">
+		<jms:listener destination="${genebank.order.jms.incoming}" ref="orderJMSReceiver" />
+	</jms:listener-container>
+</beans>

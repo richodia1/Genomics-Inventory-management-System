@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+
+	<!-- Quantity update -->
+	<bean id="quantityUpdateAction" class="org.iita.inventory.action.QuantityUpdateAction" scope="request">
+		<constructor-arg ref="quantityUpdateService" />
+		<constructor-arg ref="locationService" />
+	</bean>
+	<bean id="quantityUpdateEditor" class="org.iita.inventory.action.QuantityUpdateEditor" scope="request">
+		<constructor-arg ref="quantityUpdateService" />
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="selectionService" />
+		<constructor-arg ref="barcodingService" />
+		<constructor-arg ref="xlsExportService" />
+	</bean>
+
+	<!--
+		Viability testing <bean id="viabilityResultsAction" class="org.iita.inventory.action.ViabilityResultsAction" scope="request"> <constructor-arg
+		ref="quantityUpdateService" /> <constructor-arg ref="applicationLogic" /> </bean>
+	-->
+
+	<!-- Browse -->
+	<bean id="browseAction" class="org.iita.inventory.action.BrowseAction" scope="request">
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="locationService" />
+		<property name="selectionService" ref="selectionService" />
+		<property name="labelService" ref="labelService" />
+	</bean>
+	<bean id="inventorizeAction" class="org.iita.inventory.action.InventorizeAction" scope="request">
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="locationService" />
+	</bean>
+	<bean id="variablesAction" class="org.iita.inventory.action.VariablesAction" scope="request">
+		<constructor-arg ref="variablesService" />
+	</bean>
+	
+	<!-- Location -->
+	<bean id="locationAction" class="org.iita.inventory.action.LocationAction" scope="request">
+		<constructor-arg ref="locationService" />
+	</bean>
+
+	<!-- testing remote calls -->
+	<bean id="testRemoteInventoryAction" class="org.iita.inventory.test.TestRemoteInventory" scope="request">
+		<constructor-arg ref="inventoryService" />
+	</bean>
+	
+	
+	<!-- Item -->
+	<bean id="itemAction" class="org.iita.inventory.action.admin.ItemAction" scope="request">
+		<constructor-arg ref="itemService" />
+		<constructor-arg ref="inventoryTrialService" />
+		<property name="selectionService" ref="selectionService" />
+	</bean>
+
+	<bean id="itemTypeAction" class="org.iita.inventory.action.admin.ItemTypeAction" scope="request">
+		<constructor-arg ref="itemService" />
+		<property name="selectionService" ref="selectionService" />
+	</bean>
+	<bean id="containerTypeAction" class="org.iita.inventory.action.admin.ContainerTypeAction" scope="request">
+		<constructor-arg ref="itemService" />
+		<property name="selectionService" ref="selectionService" />
+	</bean>
+
+	<!-- Lot -->
+	<bean id="lotAction" class="org.iita.inventory.action.LotAction" scope="request">
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="lotVariableService" />
+		<constructor-arg ref="itemService" />
+		<constructor-arg ref="variablesService" />
+		<constructor-arg ref="barcodingService" />
+		<property name="balanceService" ref="balanceService" />
+		<property name="scaleService" ref="scaleService" />
+		<property name="inventoryTrialService" ref="inventoryTrialService" />
+	</bean>
+	<bean id="registerLotAction" class="org.iita.inventory.action.admin.RegisterLotAction" scope="request">
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="itemService" />
+		<property name="selectionService" ref="selectionService" />
+		<property name="balanceService" ref="balanceService" />
+	</bean>
+	<bean id="migrationAction" class="org.iita.inventory.action.MigrationAction" scope="request">
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="locationService" />
+		<constructor-arg ref="migrationService" />
+	</bean>
+
+	<!-- Lot selection -->
+	<bean id="selectionAction" class="org.iita.inventory.action.SelectionAction" scope="request">
+		<constructor-arg ref="selectionService" />
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="summaryService" />
+		<property name="labelService" ref="labelService" />
+	</bean>
+
+	<!-- Transactions -->
+	<bean id="transactionsAction" class="org.iita.inventory.action.TransactionsAction" scope="request">
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="xlsExportService" />
+	</bean>
+
+	<!-- Search -->
+	<bean id="searchAction" class="org.iita.inventory.action.SearchAction" scope="request">
+		<constructor-arg ref="searchService" />
+		<property name="labelService" ref="labelService" />
+		<property name="selectionService" ref="selectionService" />
+	</bean>
+	<bean id="advancedSearchAction" class="org.iita.inventory.action.AdvancedSearchAction" scope="request">
+		<constructor-arg ref="searchService" />
+		<property name="labelService" ref="labelService" />
+		<property name="selectionService" ref="selectionService" />
+	</bean>
+
+	<!-- Import -->
+	<bean id="importAction" class="org.iita.inventory.action.ImportAction" scope="request">
+		<property name="lotService" ref="lotService" />
+		<property name="dao" ref="daoService" />
+		<property name="itemService" ref="itemService" />
+	</bean>
+	<bean id="importLotAction" class="org.iita.inventory.action.admin.ImportLotAction" scope="request">
+		<property name="importService" ref="xlsImportService" />
+	</bean>
+	
+	<bean id="importSimpleLotAction" class="org.iita.inventory.action.admin.ImportSimpleLotAction" scope="request">
+		<constructor-arg ref="lotService" />
+	</bean>
+	
+	<bean id="importViabilityAction" class="org.iita.inventory.action.admin.ImportViabilityAction" scope="request">
+		<constructor-arg ref="lotService" />
+	</bean>
+	
+	<bean id="updateLotsAction" class="org.iita.inventory.action.admin.UpdateLotsAction" scope="request">
+		<constructor-arg>
+			<bean class="org.iita.inventory.importer.XLSLotReader" />
+		</constructor-arg>
+		<constructor-arg ref="lotService" />
+	</bean>
+
+	<!-- Dashboard -->
+	<bean id="dashboard" class="org.iita.inventory.action.DashboardAction" scope="request" />
+
+	<!-- IN VITRO GENEBANKING -->
+	<!--
+		<bean id="germplasmHealthAction" class="org.iita.inventory.action.GermplasmHealthAction" scope="request"> <constructor-arg ref="quantityUpdateService" />
+		</bean>
+	-->
+	<bean id="germplasmHealthEditor" class="org.iita.inventory.action.GermplasmHealthEditor" scope="request">
+		<constructor-arg ref="quantityUpdateService" />
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="selectionService" />
+		<constructor-arg ref="barcodingService" />
+		<constructor-arg ref="xlsExportService" />
+	</bean>
+	<!--
+		<bean id="subcultureAction" class="org.iita.inventory.action.SubcultureAction" scope="request"> <constructor-arg ref="quantityUpdateService" /> </bean>
+	-->
+	<bean id="subcultureEditor" class="org.iita.inventory.action.SubcultureEditor" scope="request">
+		<constructor-arg ref="quantityUpdateService" />
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="selectionService" />
+		<constructor-arg ref="barcodingService" />
+		<constructor-arg ref="xlsExportService" />
+	</bean>
+	<bean id="subcultureResults" class="org.iita.inventory.action.SubcultureResults" scope="request">
+		<constructor-arg ref="quantityUpdateService" />
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="selectionService" />
+	</bean>
+	<bean id="exportAction" class="org.iita.inventory.action.admin.ExportAction" scope="request">
+		<constructor-arg ref="summaryService" />
+		<constructor-arg ref="locationService" />
+		<constructor-arg ref="daoService" />
+	</bean>
+
+	<!-- Order -->
+	<bean id="orderListAction" class="org.iita.inventory.action.order.OrderListAction" scope="request">
+		<constructor-arg ref="applicationLogic" />
+	</bean>
+	<bean id="orderAction" class="org.iita.inventory.action.order.OrderAction" scope="request">
+		<constructor-arg ref="applicationLogic" />
+		<constructor-arg ref="templatingService" />
+		<constructor-arg ref="applicationLogic" />
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="selectionService" />
+	</bean>
+	<bean id="orderTagBuilder" class="org.iita.inventory.action.order.OrderTagBuilder" scope="request">
+		<constructor-arg ref="applicationLogic" /><constructor-arg ref="applicationLogic" />
+	</bean>
+	<bean id="orderFilesAction" class="org.iita.inventory.action.order.OrderFilesAction" scope="request">
+		<constructor-arg ref="applicationLogic" />
+	</bean>
+	<bean id="orderLotsAction" class="org.iita.inventory.action.order.OrderLotsAction" scope="request">
+		<constructor-arg ref="applicationLogic" />
+		<constructor-arg ref="lotService" />
+		<constructor-arg ref="inventoryTrialService" />
+	</bean>
+	
+	<bean id="ListLotLocQtyAction" class="org.iita.inventory.action.ListLotLocationQuantityAction" scope="request">
+		<constructor-arg ref="lotService" />
+	</bean>
+	
+	<!-- TAg -->
+	<bean id="tagAction" class="org.iita.inventory.action.order.InventoryTagAction" scope="request">
+		<constructor-arg ref="applicationLogic" />
+	</bean>
+	<bean id="tagBrowserAction" class="org.iita.crm.action.TagBrowserAction" scope="request">
+		<constructor-arg ref="applicationLogic" />
+	</bean>
+	
+	<!-- Printer select -->
+	<bean id="printerSelectAction" class="org.iita.inventory.action.PrinterSelectAction" scope="request">
+		<constructor-arg ref="printerService" />
+	</bean>
+	
+	<!-- Scale select -->
+	<bean id="scaleSelectAction" class="org.iita.inventory.action.ScaleSelectAction" scope="request">
+		<constructor-arg ref="scaleService" />
+	</bean>
+
+	<!-- Trials -->
+	<bean id="trialListAction" class="org.iita.inventory.action.LotTrialListAction" scope="request">
+		<constructor-arg ref="inventoryTrialService" />
+	</bean>
+	<bean id="trialProfileAction" class="org.iita.inventory.action.LotTrialProfileAction" scope="request">
+		<constructor-arg ref="inventoryTrialService" />
+		<constructor-arg ref="lotService" />
+	</bean>
+	<bean id="trialCreateAction" class="org.iita.inventory.action.LotTrialCreateAction" scope="request">
+		<property name="inventoryTrialService" ref="inventoryTrialService" />
+		<property name="lotService" ref="lotService" />
+		<property name="selectionService" ref="selectionService" />
+		<property name="quantityUpdateService" ref="quantityUpdateService" />
+		<property name="locationService" ref="locationService" />
+	</bean>
+	<bean id="traitGroupAction" class="org.iita.trial.action.TraitGroupAction" scope="request">
+		<constructor-arg ref="inventoryTrialService" />
+	</bean>
+	<bean id="traitAction" class="org.iita.trial.action.TraitAction" scope="request">
+		<constructor-arg ref="inventoryTrialService" />
+	</bean>
+	
+	<!-- Settings -->
+	<bean id="settingsAction" class="org.iita.inventory.action.SettingsAction" scope="request" />
+
+	<!-- General services   -->
+	<bean id="quantityUpdateService" class="org.iita.inventory.service.impl.QuantityUpdateServiceImpl" />
+	<bean id="itemService" class="org.iita.inventory.service.impl.ItemServiceImpl" />
+	<bean id="lotService" class="org.iita.inventory.service.impl.LotServiceImpl">
+		<property name="xlsImportService" ref="xlsImportService" />
+		<property name="barcodingService" ref="barcodingService" />
+	</bean>
+	<bean id="variablesService" class="org.iita.inventory.service.impl.VariablesServiceImpl" />
+	<bean id="lotVariableService" class="org.iita.inventory.service.impl.LotVariableServiceImpl" />
+	<bean id="lotVariableUpdateService" class="org.iita.inventory.service.impl.LotVariableUpdateServiceImpl" />
+	<bean id="locationService" class="org.iita.inventory.service.impl.LocationServiceImpl" />
+	<bean id="selectionService" class="org.iita.inventory.service.impl.SelectionServiceImpl" />
+	
+	<bean id="scaleService" class="org.iita.inventory.service.impl.BalanceScaleServiceImpl" />
+	
+	<bean id="searchService" class="org.iita.inventory.service.impl.SearchServiceImpl" />
+	<bean id="daoService" class="org.iita.inventory.service.impl.DataAccessServiceImpl" />
+	<bean id="migrationService" class="org.iita.inventory.service.impl.MigrationServiceImpl" />
+	<bean id="summaryService" class="org.iita.inventory.service.impl.SummaryServiceImpl">
+		<property name="inventoryTrialService" ref="inventoryTrialService" />
+	</bean>
+	<bean id="lotSubtypeUpdateService" class="org.iita.inventory.service.impl.LotSubtypeUpdateServiceImpl" />
+	<bean id="locMigUpdateService" class="org.iita.inventory.service.impl.LotLocationMigrationUpdateServiceImpl">
+		<property name="locationService" ref="locationService" />
+	</bean>
+	<bean id="lotReader" class="org.iita.inventory.importer.XLSLotReader" />
+	<bean id="applicationLogic" class="org.iita.inventory.service.impl.ApplicationLogic">
+		<constructor-arg ref="itemService" />
+		<property name="ordersDirectory" value="${orders.directory}" />
+		<property name="emailService" ref="emailService" />
+		<property name="templatingService" ref="templatingService" />		
+	</bean>
+	<bean id="inventoryTrialService" class="org.iita.inventory.service.impl.InventoryTrialServiceImpl" />
+
+	<!-- Ajax -->
+	<bean id="inventoryAjaxService" class="org.iita.inventory.action.ajax.InventoryAjaxService">
+		<constructor-arg ref="selectionService" />
+	</bean>
+
+</beans>

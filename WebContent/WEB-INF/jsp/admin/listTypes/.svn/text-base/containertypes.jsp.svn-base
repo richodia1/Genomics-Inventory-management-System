@@ -1,0 +1,43 @@
+<%@ include file="/common/taglibs.jsp"%>
+
+<html>
+<head>
+<title>Inventory Containers</title>
+</head>
+<body>
+<s:form>
+	<!--<s:submit name="redirect-action:update!input" value="New printer" theme="simple" />-->
+<s:submit name="redirect-action:conf/containertypes/container"   value="New Container Type" theme="simple" />
+</s:form>
+<s:if test="ctyperesults.size > 0">
+	<table class="data-listing">
+		<colgroup>
+			<col width="40" />
+			<col />
+			<col width="200" />
+		</colgroup>
+		<thead>
+			<tr>
+				<td />
+				<td>Name</td>
+				<td class="ar">Manage</td>
+		</thead>
+		<tbody>
+			<s:iterator value="ctyperesults" status="status">
+				<s:url action="conf/containertypes/container" id="containerEditUrl" includeParams="none">
+					<s:param name="id" value="id" />
+				</s:url>
+				<tr>
+					<td class="ar"><s:property value="#status.index+1" /></td>
+					<td><s:a href="%{containerEditUrl}"><s:property value="name" /></s:a></td>
+					<td class="ar"><s:a href="%{containerEditUrl}">
+					Edit</s:a> | <s:url action="conf/deletecontainertype" id="containerDelUrl" includeParams="none">
+						<s:param name="id" value="id" />
+					</s:url><s:a href="%{containerDelUrl}">Delete</s:a></td>
+				</tr>
+			</s:iterator>
+		</tbody>
+	</table>
+</s:if>
+</body>
+</html>

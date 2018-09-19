@@ -1,0 +1,14 @@
+# Application specific sl_SI texts
+
+# Menus
+menu.Dashboard=Naslovna
+menu.Browse=Brskaj
+menu.Scan=Barkoda
+menu.Selection=Izbor
+menu.Printer=Tiskalnik
+menu.Delegate=Delegation
+menu.Administration=Administracija
+menu.LogIn=Prijava
+menu.LogOut=Odjava
+
+text.findItem=Najdi:

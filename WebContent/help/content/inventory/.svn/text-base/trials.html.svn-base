@@ -1,0 +1,112 @@
+<html>
+<head>
+<title>Trials and Traits</title>
+</head>
+<body>
+<h1>Trials and Traits</h1>
+<p>Managing Inventory data using Excel files introduces several problems especially when dealing with repeated measures and other related data. In Excel,
+this can either be resolved by adding columns to spreadsheet (e.g. Viability1, Viability2, Viability3) or using additional spreadsheets where that information
+can be stored in long format (e.g. Lot ID, Date, Viability).</p>
+<p class="help-img"><img src="img/trial-profile.png" />Trial profile: Viability test</p>
+
+<p>The introduction of Trials to Genebank Inventory system provides a facility to manage, store and retrieve such data measured.</p>
+
+
+<h2>Trials or Experiments</h2>
+<p>Managing germplasm requires measurement of germplasm properties (traits). Example traits: Germination rate, Viability, Moisture content, Virus indexing,
+etc. Measuring those properties is usually done in bulk where several lots are observed for same set of traits.</p>
+<p>We define a Trial as a list of lots being observed and which properties are measured.</p>
+
+<h3>Viability testing</h3>
+<p>Seeds in Long term storage have their viability tested at several year intervals. This allows curator to establish the trends of viability within a
+particular crop and provides valuable insight in how viability decreases over time. To analyze these trends, all viability testing results must be available to
+curator. The Inventory system now provides means to hold such data.</p>
+<p>Viability is usually measured in the same experiment as Germination rate (6 days after planting).</p>
+
+
+<h2>Trait sets</h2>
+<p>Trait sets in the system allow genebank managers to “group” individual traits into commonly used sets which are observed in the same Trial. From example
+above, Viability testing requires observation of two traits: Germination6d and final Viability.</p>
+
+
+<h2>Traits</h2>
+<p>A trait defines observation and measurement method used to capture germplasm properties. Observing the same property but with different measurement
+method calls for new trait.</p>
+
+<h3>Trait conversion</h3>
+<p>Different traits measuring the same property can sometimes be converted or merged into one. Measuring 100 seed weight in milligram instead of gram allows
+for conversion between units as long as the method of observation is exactly the same.</p>
+
+
+<h2>Trials in Inventory system</h2>
+<p>Using Inventory system to capture trial data follows:</p>
+<ol>
+	<li>Establish traits</li>
+	<li>Create trait set</li>
+	<li>Create Trial and select trait set</li>
+	<li>Select the lots that should be observed in the Trial</li>
+	<li>Enter captured data</li>
+</ol>
+<p>Steps 1 and 2 above are system “configuration” steps, while steps 3-5 are daily use steps.</p>
+<h3>Configuring Trials system</h3>
+<p>To convert existing practices to Traits system, managers should review existing practices in reverse order:</p>
+<ol>
+	<li>Review data and data types captured in previous trials</li>
+	<li>Review and document lot selection process</li>
+	<li>Identify trial properties (date, naming)</li>
+	<li>Identify set of traits observed in trial</li>
+	<li>Identify and document individual traits</li>
+</ol>
+<h4>Establishing traits</h4>
+<p>An individual Trait captures the following information: Trait name, Unique short name (XLS variable name), Method of observation and measurement, Data
+type and scale.</p>
+
+
+<h4>Coded traits</h4>
+<p>Observed data is usually captured in numeric form (100%, 44%, 1.3g, etc). Using coding information, one can define a fixed set of values that can be used
+as trait values. Measuring susceptibility to virus is usually captured in “text” form: Positive +++, Positive ++, Positive +, Marginal +/-, Negative -.</p>
+<p>The Traits system allows to store these as “Coded” traits where unique values are assigned to all coded values: 3 for Positive +++, 0 for Marignal, -1
+for Negative.</p>
+<p class="help-img"><img src="img/trial-traitcoded.png" />Example coded trait</p>
+<p>Using coded traits limits what data can be entered as observation results.</p>
+
+
+<h4>Creating trait sets</h4>
+<p>In a single Trial several different traits may be observed. To simplify Trial configuration, you can register Trait sets that are commonly used. A trait
+set “Viability testing” with Germination6d and final Viability is an example of trait set.</p>
+<p><b>Note</b>, there is no limit on which traits are measured in a single Trial.</p>
+
+
+
+<h1>Using Trials system</h1>
+<p>Trials system captures data which lots are being tested, when the trial started, trial title and description and most importantly, which Traits are
+observed.</p>
+
+<h2>Creating Trials</h2>
+<p>Clicking “Create new trial” on dashboard opens Trial properties form:</p>
+<p class="help-img"><img src="img/trial-edit.png" />Trial properties</p>
+<ul>
+	<li><b>Trial name:</b> give meaningful name to trial</li>
+	<li><b>Date of trial</b></li>
+	<li><b>Trait group:</b> select group of traits that are observed in the trial.</li>
+	<li><b>Description:</b> additional description of trial.</li>
+</ul>
+
+<p>Once trial is record is created, register lots with the trial. This records that a particular lot should be included in trial and has to be included in
+observation.</p>
+
+
+<h3>Selecting lots</h3>
+<p>Registering lots to be observed in a trial is done by entering Lot ID numbers or Lot barcode numbers (using barcode reader).</p>
+<p><b>Note:</b> Trials can also quickly be created for any committed Inventory update record (e.g. Regeneration) by clicking the “Create trial” button. This
+will register all lots in the update for trial.</p>
+
+
+<h3>Data capture</h3>
+<p>Observation results are either entered in Excel file and uploaded to the system or the on-line form is used to update data. Once data is entered:</p>
+<p class="help-img"><img src="img/trial-results.png" />Trial results</p>
+
+<p>Observed data is also displayed on lot profile page in “Last trial results” section:</p>
+<p class="help-img"><img src="img/trial-lotdetail.png" />Trial results displayed on Lot profile</p>
+</body>
+</html>

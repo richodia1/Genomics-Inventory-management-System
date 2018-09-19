@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="resources.utf8" default="resources" basedir=".">
+	<target name="resources" description="Run native2ascii on resurce files">
+		<echo>Converting UTF8 resources to ASCII.</echo>
+		<native2ascii encoding="UTF8" src="i18n" includes="*.properties" dest="src" />
+	</target>
+</project>

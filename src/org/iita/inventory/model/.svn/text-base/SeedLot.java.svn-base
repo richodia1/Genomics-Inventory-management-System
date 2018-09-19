@@ -1,0 +1,279 @@
+/**
+ * 
+ */
+package org.iita.inventory.model;
+
+import java.util.Date;
+
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
+import org.hibernate.search.annotations.Indexed;
+
+/**
+ * @author mobreza
+ */
+@Entity
+@Indexed
+public class SeedLot extends Lot {
+	private static final long serialVersionUID = 7175796113052573974L;
+	/**
+	 * 
+	 */
+	private static final String[] SEED_UOMS = new String[] { "seed", "g" };
+
+	/** Weight */
+	private Double weight = null;
+	/** 100 Seed weight */
+	private Double weight100 = null;
+	/** Moisture content */
+	private Double moistureContent = null;
+	/** Germination (%) */
+	private Double germination = null;
+	/** Field Location */
+	private String fieldLocation;
+	/** Planting Date */
+	private Date plantingDate;
+	/** Harvest Date */
+	private Date harvestDate;
+	/** GermTestDate */
+	private Date germinationDate;
+	/** Year Processed */
+	private Long yearProcessed = null;
+	/** Storage */
+	private String storageType;
+	/** Seed tested */
+	private Boolean seedTested = null;
+	/** Virus free */
+	private Boolean virusFree = null;
+	/** PQS certified */
+	private Boolean pqsCertified = null;
+	/** Conformity column */
+	private Boolean conformity = null;
+
+	/**
+	 * @return the weight100
+	 */
+	public Double getWeight100() {
+		return this.weight100;
+	}
+
+	/**
+	 * @param weight100 the weight100 to set
+	 */
+	public void setWeight100(Double weight100) {
+		this.weight100 = weight100;
+	}
+
+	/**
+	 * @return the moistureContent
+	 */
+	public Double getMoistureContent() {
+		return this.moistureContent;
+	}
+
+	/**
+	 * @param moistureContent the moistureContent to set
+	 */
+	public void setMoistureContent(Double moistureContent) {
+		this.moistureContent = moistureContent;
+	}
+
+	/**
+	 * @return the germination
+	 */
+	public Double getGermination() {
+		return this.germination;
+	}
+
+	/**
+	 * @param germination the germination to set
+	 */
+	public void setGermination(Double germination) {
+		this.germination = germination;
+	}
+
+	/**
+	 * @return the fieldLocation
+	 */
+	public String getFieldLocation() {
+		return this.fieldLocation;
+	}
+
+	/**
+	 * @param fieldLocation the fieldLocation to set
+	 */
+	public void setFieldLocation(String fieldLocation) {
+		this.fieldLocation = fieldLocation;
+	}
+
+	/**
+	 * @return the plantingDate
+	 */
+	public Date getPlantingDate() {
+		return this.plantingDate;
+	}
+
+	/**
+	 * @param plantingDate the plantingDate to set
+	 */
+	public void setPlantingDate(Date plantingDate) {
+		this.plantingDate = plantingDate;
+	}
+
+	/**
+	 * @return the harvestDate
+	 */
+	public Date getHarvestDate() {
+		return this.harvestDate;
+	}
+
+	/**
+	 * @param harvestDate the harvestDate to set
+	 */
+	public void setHarvestDate(Date harvestDate) {
+		this.harvestDate = harvestDate;
+	}
+
+	/**
+	 * @return the germinationDate
+	 */
+	public Date getGerminationDate() {
+		return this.germinationDate;
+	}
+
+	/**
+	 * @param germinationDate the germinationDate to set
+	 */
+	public void setGerminationDate(Date germinationDate) {
+		this.germinationDate = germinationDate;
+	}
+
+	/**
+	 * @return the yearProcessed
+	 */
+	public Long getYearProcessed() {
+		return this.yearProcessed;
+	}
+
+	/**
+	 * @param yearProcessed the yearProcessed to set
+	 */
+	public void setYearProcessed(Long yearProcessed) {
+		this.yearProcessed = yearProcessed;
+	}
+
+	/**
+	 * @return the storageType
+	 */
+	public String getStorageType() {
+		return this.storageType;
+	}
+
+	/**
+	 * @param storageType the storageType to set
+	 */
+	public void setStorageType(String storageType) {
+		this.storageType = storageType;
+	}
+
+	/**
+	 * @return the seedTested
+	 */
+	public Boolean getSeedTested() {
+		return this.seedTested;
+	}
+
+	/**
+	 * @param seedTested the seedTested to set
+	 */
+	public void setSeedTested(Boolean seedTested) {
+		this.seedTested = seedTested;
+	}
+
+	/**
+	 * @return the virusFree
+	 */
+	public Boolean getVirusFree() {
+		return this.virusFree;
+	}
+
+	/**
+	 * @param virusFree the virusFree to set
+	 */
+	public void setVirusFree(Boolean virusFree) {
+		this.virusFree = virusFree;
+	}
+
+	/**
+	 * @return the pqsCertified
+	 */
+	public Boolean getPqsCertified() {
+		return this.pqsCertified;
+	}
+
+	/**
+	 * @param pqsCertified the pqsCertified to set
+	 */
+	public void setPqsCertified(Boolean pqsCertified) {
+		this.pqsCertified = pqsCertified;
+	}
+
+	/**
+	 * @return the weight
+	 */
+	public Double getWeight() {
+		return this.weight;
+	}
+
+	/**
+	 * @param weight the weight to set
+	 */
+	public void setWeight(Double weight) {
+		this.weight = weight;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.iita.inventory.model.Lot#copyFrom(org.iita.inventory.model.Lot)
+	 */
+	@Override
+	public void copyFrom(Lot lot) {
+		super.copyFrom(lot);
+		if (lot instanceof SeedLot) {
+			SeedLot other = (SeedLot) lot;
+			this.fieldLocation = other.fieldLocation;
+			this.germination = other.germination;
+			this.germinationDate = other.germinationDate;
+			this.harvestDate = other.harvestDate;
+			this.moistureContent = other.moistureContent;
+			this.plantingDate = other.plantingDate;
+			this.pqsCertified = other.pqsCertified;
+			this.seedTested = other.seedTested;
+			this.storageType = other.storageType;
+			this.virusFree = other.virusFree;
+			this.weight100 = other.weight100;
+			this.yearProcessed = other.yearProcessed;
+		}
+	}
+
+	@Override
+	@Transient
+	public String[] getUoms() {
+		return SEED_UOMS;
+	}
+	
+	/**
+	 * @return the conformity
+	 */
+	public Boolean getConformity() {
+		return this.conformity;
+	}
+	
+	/**
+	 * @param conformity the conformity to set
+	 */
+	public void setConformity(Boolean conformity) {
+		this.conformity = conformity;
+	}
+}

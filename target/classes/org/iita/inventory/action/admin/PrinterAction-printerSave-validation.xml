@@ -1,0 +1,36 @@
+<!DOCTYPE validators PUBLIC "-//OpenSymphony Group//XWork Validator 1.0.2//EN"
+       "http://www.opensymphony.com/xwork/xwork-validator-1.0.2.dtd">
+<validators>
+	<field name="printer.name">
+		<field-validator type="required">
+			<message>Printer name must be specified!.</message>
+		</field-validator>
+		<field-validator type="requiredstring">
+			<message>String characters expected for printer name.</message>
+		</field-validator>
+	</field>
+	<field name="printer.location">
+		<field-validator type="required">
+			<message>You must enter printer's location!.</message>
+		</field-validator>
+		<field-validator type="requiredstring">
+			<message>Last name is expected to be string.</message>
+		</field-validator>
+	</field>
+	<field name="printer.allowedIPaddresses">
+		<field-validator type="required">
+			<message>You must enter the allowed IP address!.</message>
+		</field-validator>
+		<field-validator type="requiredstring">
+			<message>IP address is expected to be string.</message>
+		</field-validator>
+	</field>
+	<field name="printer.printServiceName">
+		<field-validator type="required">
+			<message>You must enter printer service name!.</message>
+		</field-validator>
+		<field-validator type="requiredstring">
+			<message>Invalid printer service name!.</message>
+		</field-validator>
+	</field>
+</validators>

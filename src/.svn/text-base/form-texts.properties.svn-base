@@ -1,0 +1,5 @@
+# Application specific form texts
+
+form.login.domainNote=<b>Note:</b> Use your Domain Network account to log in.
+form.login.forgotPassword=Don't want to use your domain password or domain password does not work? You can <a href="{0}">generate a password</a> to use only with this application.
+form.login.error=Invalid user name or password!

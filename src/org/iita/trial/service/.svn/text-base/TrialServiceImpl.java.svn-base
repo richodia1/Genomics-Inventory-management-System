@@ -1,0 +1,844 @@
+/**
+ * inventory.Struts Jun 30, 2010
+ */
+package org.iita.trial.service;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.iita.entity.SimpleEntity;
+import org.iita.security.model.User;
+import org.iita.service.impl.XLSExportService;
+import org.iita.trial.model.Trait;
+import org.iita.trial.model.TraitGroup;
+import org.iita.trial.model.TraitLastValue;
+import org.iita.trial.model.TraitValue;
+import org.iita.trial.model.Trial;
+import org.iita.trial.model.Trial.TrialStatus;
+import org.iita.util.PagedResult;
+import org.springframework.security.annotation.Secured;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Handle most of ICIS-like experiment data
+ * 
+ * @author mobreza
+ */
+public abstract class TrialServiceImpl<ENTITY, TRIAL extends Trial<TRAITVALUE>, TRAITVALUE extends TraitValue<TRIAL, ENTITY>, TRAITLASTVALUE extends TraitLastValue<TRIAL, ENTITY>>
+		implements TrialService<ENTITY, TRIAL, TRAITVALUE, TRAITLASTVALUE> {
+	private static final Log LOG = LogFactory.getLog(TrialServiceImpl.class);
+	protected EntityManager entityManager;
+
+	/**
+	 * @param entityManager the entityManager to set
+	 */
+	@PersistenceContext
+	public void setEntityManager(EntityManager entityManager) {
+		this.entityManager = entityManager;
+	}
+
+	/**
+	 * Update trial data
+	 * 
+	 * @see org.iita.trial.service.TrialService#update(org.iita.trial.model.Trial)
+	 */
+	@Override
+	@Transactional
+	public void update(TRIAL trial) {
+		if (trial.getId() == null)
+			this.entityManager.persist(trial);
+		else
+			this.entityManager.merge(trial);
+	};
+
+	/**
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly = true)
+	public List<TraitGroup> listTraitGroups() {
+		return this.entityManager.createQuery("from TraitGroup").getResultList();
+	};
+
+	/**
+	 * @see org.iita.trial.service.TrialService#listTrials(int, int)
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public PagedResult<TRIAL> listTrials(int startAt, int maxResults) {
+		PagedResult<TRIAL> paged = new PagedResult<TRIAL>(startAt, maxResults);
+		paged.setResults(this.entityManager.createQuery("from " + getTrialClass().getName() + " t order by t.date desc").setFirstResult(startAt).setMaxResults(
+				maxResults).getResultList());
+		if (paged.getResults().size() > 0) {
+			paged.setTotalHits((Long) this.entityManager.createQuery("select count (t) from " + getTrialClass().getName() + " t").getSingleResult());
+		}
+		return paged;
+	}
+
+	/**
+	 * @see org.iita.trial.service.TrialService#listOpenTrials(int, int)
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public PagedResult<TRIAL> listOpenTrials(int startAt, int maxResults) {
+		PagedResult<TRIAL> paged = new PagedResult<TRIAL>(startAt, maxResults);
+		paged.setResults(this.entityManager.createQuery(
+				"from " + getTrialClass().getName() + " t where t.status=org.iita.trial.model.Trial$TrialStatus.OPEN order by t.date desc").setFirstResult(
+				startAt).setMaxResults(maxResults).getResultList());
+		if (paged.getResults().size() > 0) {
+			paged.setTotalHits((Long) this.entityManager.createQuery(
+					"select count (t) from " + getTrialClass().getName() + " t where t.status=org.iita.trial.model.Trial$TrialStatus.OPEN").getSingleResult());
+		}
+		return paged;
+	}
+
+	/**
+	 * @see org.iita.trial.service.TrialService#listTrials(org.iita.security.model.User, int, int)
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public PagedResult<TRIAL> listTrials(User owner, int startAt, int maxResults) {
+		PagedResult<TRIAL> paged = new PagedResult<TRIAL>(startAt, maxResults);
+		paged.setResults(this.entityManager.createQuery("from " + getTrialClass().getName() + " t where t.createdBy=:username order by t.date desc")
+				.setParameter("username", owner.getUsername()).setFirstResult(startAt).setMaxResults(maxResults).getResultList());
+		if (paged.getResults().size() > 0) {
+			paged.setTotalHits((Long) this.entityManager.createQuery("select count (t) from " + getTrialClass().getName() + " t where t.createdBy=:username ")
+					.setParameter("username", owner.getUsername()).getSingleResult());
+		}
+		return paged;
+	}
+
+	/**
+	 * @see org.iita.trial.service.TrialService#getTraitLastValues(java.lang.Object)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	@Transactional(readOnly = true)
+	public List<TRAITLASTVALUE> getTraitLastValues(Class<TRAITLASTVALUE> returnType, ENTITY entity) {
+		LOG.info("Listing last trait values of " + entity + " from " + returnType);
+		return this.entityManager.createQuery("from " + returnType.getName() + " ltv where ltv.entity=:entity order by ltv.date desc").setParameter("entity", entity).getResultList();
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	@Transactional(readOnly = true)
+	public TRAITLASTVALUE getTraitLastValue(java.lang.Class<TRAITLASTVALUE> returnType, String var, ENTITY entity) {
+		LOG.info("Looking for last trait values '" + var + "' of " + entity + " from " + returnType);
+		try {
+			TRAITLASTVALUE lastTraitValue = (TRAITLASTVALUE) this.entityManager.createQuery(
+					"from " + returnType.getName() + " ltv where ltv.entity=:entity and ltv.trait.var=:var").setParameter("var", var).setParameter("entity",
+					entity).getSingleResult();
+			LOG.debug("Found last trait value: " + lastTraitValue);
+			return lastTraitValue;
+		} catch (NoResultException e) {
+			LOG.info("No last trat value '" + var + "' of " + entity);
+			return null;
+		}
+	};
+
+	@Override
+	@SuppressWarnings("unchecked")
+	@Transactional(readOnly = true)
+	public List<TRAITVALUE> getTraitValues(Class<TRAITVALUE> returnType, ENTITY entity) {
+		LOG.info("Listing all trait values of " + entity + " from " + returnType);
+		return this.entityManager.createQuery("from " + returnType.getName() + " ltv where ltv.entity=:entity").setParameter("entity", entity).getResultList();
+	};
+
+	/**
+	 * Find number of entities in the Trial, that gives the number of rows in array. Find number of traits used in Trial, that gives columns. New empty array is
+	 * <code>Double[entities+1][traits+1]</code>.
+	 * 
+	 * @see org.iita.trial.service.TrialService#getEmptyData(org.iita.trial.model.Trial)
+	 */
+	@Override
+	public Double[][] getEmptyData(TRIAL trial) {
+		Double[][] emptyData;
+
+		Long entityCount = (Long) this.entityManager.createQuery(
+				"select count(distinct tv.entity) from " + getTraitValueClass().getName() + " tv where tv.trial=:trial").setParameter("trial", trial)
+				.getSingleResult();
+
+		LOG.debug("Trial " + trial.getName() + " has " + entityCount + " lots registered.");
+
+		emptyData = new Double[(int) (entityCount + 1)][];
+
+		List<Trait> usedTraits = this.getUsedTraits(trial);
+
+		for (int i = 0; i < emptyData.length; i++)
+			emptyData[i] = new Double[usedTraits.size() + 1];
+
+		LOG.info("Returning empty data array " + emptyData.length + " x " + emptyData[0].length);
+
+		return emptyData;
+	};
+
+	@Transactional(readOnly = true)
+	protected List<Object[]> getWideData(TRIAL trial) {
+		List<Object[]> longData = this.getRawLongData(trial);
+
+		List<Object[]> wideData = new ArrayList<Object[]>();
+		LOG.debug("Converting long data to wide data");
+
+		Hashtable<Long, Integer> lookupColumn = new Hashtable<Long, Integer>();
+		Hashtable<Long, Integer> lookupRow = new Hashtable<Long, Integer>();
+
+		// find used traits
+		List<Trait> usedTraits = this.getUsedTraits(trial);
+
+		Object[] headerRow = new Object[usedTraits.size() + 1];
+		headerRow[0] = null;
+
+		for (Trait t : usedTraits) {
+			LOG.debug("Trial is using trait: " + t);
+			int traitColumn = usedTraits.indexOf(t) + 1;
+			lookupColumn.put(t.getId(), traitColumn);
+			headerRow[traitColumn] = t;
+		}
+		wideData.add(headerRow);
+
+		for (Object[] rawLong : longData) {
+			Integer rowIndex = lookupRow.get(rawLong[0]);
+			Object[] row = null;
+			if (rowIndex == null) {
+				row = new Object[usedTraits.size() + 1];
+				row[0] = rawLong[0];
+				wideData.add(row);
+				lookupRow.put((Long) rawLong[0], wideData.size() - 1);
+			} else {
+				row = wideData.get(rowIndex);
+			}
+			row[lookupColumn.get(rawLong[1])] = rawLong[2];
+		}
+
+		return wideData;
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public PagedResult<Object[]> getWideData(TRIAL trial, int startAt, int maxResults) {
+		List<Object[]> wideData = getWideData(trial);
+		PagedResult<Object[]> paged = new PagedResult<Object[]>(startAt, maxResults);
+
+		ArrayList<Object[]> filtered = new ArrayList<Object[]>();
+		// add header row
+		filtered.add(wideData.get(0));
+		// filter out selected rows
+		for (int i = startAt; i < startAt + maxResults && i < wideData.size() - 1; i++) {
+			Object[] row = wideData.get(i + 1);
+			row[0] = this.entityManager.find(getEntityClass(), (Long) row[0]);
+			filtered.add(row);
+		}
+		paged.setResults(filtered);
+		paged.setTotalHits(wideData.size() - 1);
+		return paged;
+	}
+
+	/**
+	 * @param trial
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	protected List<Trait> getUsedTraits(TRIAL trial) {
+		List<Trait> usedTraits = new ArrayList<Trait>();
+		if (trial.getTraitGroup() != null) {
+			TraitGroup traitGroup = trial.getTraitGroup();
+			LOG.debug("Trial is using trait group: " + traitGroup.getTitle() + " with " + traitGroup.getTraits().size() + " traits");
+			if (traitGroup.getTraits().size() > 0)
+				usedTraits.addAll(traitGroup.getTraits());
+		}
+
+		LOG.debug("Finding unique traits used in " + trial);
+		List<Trait> allTraits = this.entityManager.createQuery("select distinct tv.trait from " + getTraitValueClass().getName() + " tv where tv.trial=:trial")
+				.setParameter("trial", trial).getResultList();
+		for (Trait traitActuallyUsed : allTraits)
+			if (!usedTraits.contains(traitActuallyUsed)) {
+				LOG.info("Custom trait " + traitActuallyUsed + " added to end of list of traits");
+				usedTraits.add(traitActuallyUsed);
+			}
+
+		return usedTraits;
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	@SuppressWarnings("unchecked")
+	public List<? extends TraitValue<TRIAL, ENTITY>> getLongData(TRIAL trial) {
+		LOG.info("Fetching all trial data for " + trial);
+		return this.entityManager.createQuery("select tv from " + getTraitValueClass().getName() + " tv where tv.trial=:trial order by tv.entity")
+				.setParameter("trial", trial).getResultList();
+	}
+
+	/**
+	 * Return list of Object[] { entity, trait_id, value }
+	 * 
+	 * @param trial
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private List<Object[]> getRawLongData(TRIAL trial) {
+		LOG.info("Fetching all trial data for " + trial);
+		return this.entityManager.createQuery(
+				"select tv.entity.id, tv.trait.id, tv.value from " + getTraitValueClass().getName() + " tv where tv.trial=:trial order by tv.entity")
+				.setParameter("trial", trial).getResultList();
+	}
+
+	@Override
+	@Transactional
+	public void ensureEntityTrialed(TRIAL trial, ENTITY entity) {
+		if (entity == null || trial == null) {
+			LOG.warn("Not adding null entity to trial");
+			return;
+		}
+
+		try {
+			if (this.isEntityTrialed(trial, entity)) {
+				LOG.debug("Entity is already trialed, no need to register.");
+			} else {
+				LOG.debug("Registering entity with trial.");
+				for (Trait trait : trial.getTraitGroup().getTraits()) {
+					TRAITVALUE t = getTraitValueClass().newInstance();
+					t.setEntity(entity);
+					t.setValue(null);
+					t.setTrait(trait);
+					t.setTrial(trial);
+					t.setDate(trial.getDate());
+					LOG.debug("\tAdding trait " + trait);
+					this.entityManager.persist(t);
+				}
+			}
+		} catch (InstantiationException e) {
+			LOG.error(e.getMessage());
+		} catch (IllegalAccessException e) {
+			LOG.error(e.getMessage());
+		}
+	}
+
+	/**
+	 * Ensure all entities are trialed
+	 * 
+	 * @see org.iita.trial.service.TrialService#ensureEntitiesTrialed(org.iita.trial.model.Trial, java.util.List)
+	 */
+	@Override
+	@Transactional
+	public void ensureEntitiesTrialed(TRIAL trial, java.util.List<ENTITY> entities) {
+		LOG.debug("Ensuring " + entities.size() + " entities are trialed in " + trial.getName());
+		for (ENTITY entity : entities) {
+			ensureEntityTrialed(trial, entity);
+		}
+	};
+
+	@Override
+	@Transactional
+	public void removeEntitiesTrialed(TRIAL trial, List<Long> entityIds) throws TrialException {
+		if (entityIds == null || trial == null) {
+			LOG.warn("Not removing null entities from trial");
+			return;
+		}
+
+		if (trial.getStatus() != TrialStatus.OPEN) {
+			throw new TrialException("Cannot remove entities from this trial. It is not open.");
+		}
+
+		LOG.debug("Removing values for " + entityIds.size() + " entities in trial " + trial);
+		int deleted = this.entityManager.createQuery(
+				"delete from " + getTraitValueClass().getName() + " tv where tv.trial=:trial and tv.entity.id in (:entityIds)").setParameter("trial", trial)
+				.setParameter("entityIds", entityIds).executeUpdate();
+		LOG.info("Removed " + deleted + " trial values.");
+	};
+
+	/**
+	 * @param trial
+	 * @param entity
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	private boolean isEntityTrialed(Trial<?> trial, ENTITY entity) {
+		LOG.debug("Checking the number of trial values for " + entity + " in trial " + trial);
+		Object x = this.entityManager
+				.createQuery("select count(tv) from " + getTraitValueClass().getName() + " tv where tv.trial=:trial and tv.entity=:entity").setParameter(
+						"trial", trial).setParameter("entity", entity).getSingleResult();
+		LOG.info("Entity: " + entity + " has " + x + " trial values " + x.getClass());
+		return x != null && ((Long) x).longValue() > 0;
+	}
+
+	/**
+	 * @param trial
+	 * @param entity
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	@Transactional(readOnly = true)
+	private List<? extends TraitValue<Trial<?>, ENTITY>> getEntityTrialValues(Trial<?> trial, ENTITY entity) {
+		LOG.debug("Getting trial values for " + entity + " in trial " + trial);
+		List<? extends TraitValue<Trial<?>, ENTITY>> result = (List<? extends TraitValue<Trial<?>, ENTITY>>) this.entityManager.createQuery(
+				"select tv from " + getTraitValueClass().getName() + " tv where tv.trial=:trial and tv.entity=:entity").setParameter("trial", trial)
+				.setParameter("entity", entity).getResultList();
+		LOG.info("Found " + result.size() + " existing trait values.");
+		return result;
+	}
+
+	/**
+	 * Update trial data. Data format used:
+	 * 
+	 * <pre>
+	 * ROW 0: NULL, Trait ID 1, Trait ID 2, Trait ID 3
+	 * ROW n: Entity ID, value 1, value 2, value 3
+	 * </pre>
+	 * 
+	 * @throws TrialException
+	 * @see org.iita.trial.service.TrialService#updateTrialData(org.iita.trial.model.Trial, java.lang.Double[][])
+	 */
+	@Override
+	@Transactional
+	public void updateTrialData(TRIAL trial, Double[][] data) throws TrialException {
+		if (trial == null) {
+			LOG.warn("Not updating null trial");
+			return;
+		}
+
+		if (trial.getStatus() != TrialStatus.OPEN) {
+			throw new TrialException("Cannot update data for a closed trial.");
+		}
+
+		printArray(data);
+
+		// load traits
+		List<Trait> usedTraits = new ArrayList<Trait>();
+		Double[] headerRow = data[0];
+		int usedColumns = 0;
+		for (int i = 1; i < headerRow.length; i++) {
+			Double headerValue = headerRow[i];
+			if (headerValue == null) {
+				if (i == 1)
+					throw new TrialException("Required Trait ID not provided for data column :" + i);
+				else
+					usedColumns = i;
+				break;
+			}
+
+			usedTraits.add(this.entityManager.find(Trait.class, headerRow[i].longValue()));
+			LOG.debug("Trait " + usedTraits.get(usedTraits.size() - 1).getTitle() + " used in trial");
+			usedColumns = i + 1;
+		}
+
+		LOG.info("Having " + usedTraits.size() + " traits in this trial, using " + usedColumns + " columns in data");
+		for (int i = 1; i < data.length; i++) {
+			// iterating over rows of data
+			Double[] row = data[i];
+			if (row[0] == null) {
+				LOG.warn("Entity ID not provided, skipping");
+				continue;
+			}
+			ENTITY entity = this.entityManager.find(getEntityClass(), row[0].longValue());
+			LOG.info("Row " + i + " is for entity: " + entity);
+
+			updateTraitValues(trial, entity, usedTraits, row, 1, usedColumns);
+		}
+	}
+
+	/**
+	 * Set defaults to all values. Data format used:
+	 * 
+	 * <pre>
+	 * ROW 0: NULL, Trait ID 1, Trait ID 2, Trait ID 3
+	 * ROW 1: NULL, value 1, value 2, value 3
+	 * </pre>
+	 * 
+	 * @throws TrialException
+	 * @see org.iita.trial.service.TrialService#setTrialDefaults(org.iita.trial.model.Trial, java.lang.Double[][])
+	 */
+	@Override
+	@Transactional
+	public void setTrialDefaults(TRIAL trial, Double[][] data) throws TrialException {
+		if (trial == null) {
+			LOG.warn("Not updating null trial");
+			return;
+		}
+
+		if (trial.getStatus() != TrialStatus.OPEN) {
+			throw new TrialException("Cannot update data for a closed trial.");
+		}
+
+		printArray(data);
+
+		// load traits
+		List<Trait> usedTraits = new ArrayList<Trait>();
+		Double[] headerRow = data[0];
+		int usedColumns = 0;
+		for (int i = 1; i < headerRow.length; i++) {
+			Double headerValue = headerRow[i];
+			if (headerValue == null) {
+				if (i == 1)
+					throw new TrialException("Required Trait ID not provided for data column :" + i);
+				else
+					usedColumns = i;
+				break;
+			}
+
+			usedTraits.add(this.entityManager.find(Trait.class, headerRow[i].longValue()));
+			LOG.debug("Trait " + usedTraits.get(usedTraits.size() - 1).getTitle() + " used in trial");
+			usedColumns = i + 1;
+		}
+
+		LOG.info("Having " + usedTraits.size() + " traits in this trial, using " + usedColumns + " columns in data");
+
+		Double[] row = data[1];
+		if (row[0] != null) {
+			LOG.warn("Entity ID provided, skipping");
+			throw new TrialException("Entity ID provided. Not proper data format!");
+		}
+
+		// iterate over all entities trialed
+		List<ENTITY> usedEntities = this.getUsedEntities(trial);
+		for (ENTITY entity : usedEntities) {
+			LOG.info("Setting defaults for: " + entity);
+			updateTraitValues(trial, entity, usedTraits, row, 1, usedColumns);
+		}
+	}
+
+	/**
+	 * @param trial
+	 * @param lot
+	 * @param traitValues
+	 */
+	protected void updateTraitValues(TRIAL trial, ENTITY entity, List<Trait> usedTraits, Double[] values, int pos, int usedColumns) {
+		// get existing trait values
+		List<? extends TraitValue<Trial<?>, ENTITY>> traitValues = getEntityTrialValues(trial, entity);
+		for (int j = pos; j < usedColumns; j++) {
+			boolean found = false;
+
+			// scan existing traits
+			for (TraitValue<Trial<?>, ENTITY> traitValue : traitValues) {
+				LOG.debug("Checking existing traitvalue: " + traitValue.getTrait().getId() + " == " + usedTraits.get(j - pos).getId().longValue());
+				if (traitValue.getTrait().getId().equals(usedTraits.get(j - pos).getId().longValue())) {
+					traitValue.setValue(values[j]);
+					traitValue.setDate(trial.getDate());
+					LOG.debug("Updating trait value to " + values[j]);
+					this.entityManager.merge(traitValue);
+					found = true;
+					break;
+				}
+			}
+
+			if (!found) {
+				try {
+					TRAITVALUE traitValue;
+					traitValue = getTraitValueClass().newInstance();
+					traitValue.setEntity(entity);
+					traitValue.setDate(trial.getDate());
+					LOG.debug("Inserting trait value as " + values[j]);
+					traitValue.setValue(values[j]);
+					traitValue.setTrait(usedTraits.get(j - pos));
+					traitValue.setTrial(trial);
+					this.entityManager.persist(traitValue);
+				} catch (InstantiationException e) {
+					LOG.error(e.getMessage());
+				} catch (IllegalAccessException e) {
+					LOG.error(e.getMessage());
+				}
+			}
+
+		}
+	}
+
+	/**
+	 * @param data
+	 */
+	private void printArray(Double[][] data) {
+		LOG.info("Array is " + data.length + " x " + data[0].length);
+		for (int i = 0; i < data.length; i++) {
+			Double[] row = data[i];
+			StringBuffer sb = new StringBuffer();
+			sb.append("Row " + i + " [" + row.length + "]: ");
+			for (int j = 0; j < row.length; j++) {
+				if (j > 0)
+					sb.append("\t");
+				sb.append(row[j]);
+			}
+			LOG.debug(sb.toString());
+		}
+	}
+
+	/**
+	 * Close trial and remove all NULL values
+	 * 
+	 * @param trial
+	 */
+	@Override
+	@Transactional
+	public void closeTrial(TRIAL trial) {
+		LOG.info("Closing trial: " + trial);
+		trial.setStatus(TrialStatus.CLOSED);
+		this.entityManager.merge(trial);
+		List<TRAITVALUE> vals = trial.getTraitValues();
+		for (int i = vals.size() - 1; i >= 0; i--) {
+			TRAITVALUE tv = vals.get(i);
+			if (tv.getValue() == null) {
+				LOG.debug("Deleting NULL trait value: " + tv);
+				this.entityManager.remove(tv);
+			}
+		}
+	}
+
+	/**
+	 * Remove trial
+	 * 
+	 * @throws TrialException
+	 * @see org.iita.trial.service.TrialService#removeTrial(org.iita.trial.model.Trial)
+	 */
+	@Override
+	@Transactional
+	public void removeTrial(TRIAL trial) throws TrialException {
+		if (trial.getStatus() == TrialStatus.CLOSED)
+			throw new TrialException("Cannot remove closed trial.");
+
+		LOG.info("Deleting trial: " + trial);
+		this.entityManager.remove(trial);
+	}
+
+	/**
+	 * Set trial status to OPEN.
+	 * 
+	 * @see org.iita.trial.service.TrialService#openTrial(org.iita.trial.model.Trial)
+	 */
+	@Override
+	@Transactional
+	@Secured( { "ROLE_ROLLBACK", "ROLE_OPERATOR" })
+	public void openTrial(TRIAL trial) {
+		LOG.info("Opening trial: " + trial);
+		trial.setStatus(TrialStatus.OPEN);
+		this.entityManager.merge(trial);
+	}
+
+	/**
+	 * Generate Excel file with Trial data
+	 * 
+	 * @param trial
+	 * @return
+	 * @throws IOException
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public File generateXLS(TRIAL trial) throws IOException {
+		HSSFWorkbook wb = new HSSFWorkbook();
+		HSSFSheet sheet = wb.createSheet(trial.getName());
+
+		List<Object[]> wideData = getWideData(trial);
+		String[] headings;
+		Object[] headerRow = wideData.get(0);
+		int STARTING_COLUMN = 2;
+		headings = new String[headerRow.length + STARTING_COLUMN - 1];
+		headings[0] = "Entity ID";
+		headings[1] = "Entity";
+
+		for (int i = 1; i < headerRow.length; i++) {
+			Trait trait = (Trait) headerRow[i];
+			headings[i + STARTING_COLUMN - 1] = trait.getTitle();
+		}
+
+		List<Object[]> data = new ArrayList<Object[]>();
+		for (int i = 1; i < wideData.size(); i++) {
+			Object[] rowData = wideData.get(i);
+			Object[] row = new Object[headings.length + STARTING_COLUMN - 1];
+			data.add(row);
+
+			SimpleEntity entity = (SimpleEntity) rowData[0];
+			row[0] = entity.getId();
+			row[1] = entity.toString();
+			for (int j = 1; j < rowData.length; j++) {
+				row[j + STARTING_COLUMN - 1] = rowData[j];
+			}
+
+		}
+		XLSExportService.fillSheet(sheet, headings, data);
+
+		File tempFile = File.createTempFile("inv-", ".xls");
+		FileOutputStream fos = new FileOutputStream(tempFile);
+		wb.write(fos);
+		fos.close();
+
+		return tempFile;
+	}
+
+	/**
+	 * Update experiment from XLS files
+	 * 
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 * @throws TrialException
+	 * @see org.iita.trial.service.TrialService#updateFromXLS(org.iita.trial.model.Trial, java.util.List)
+	 */
+	@Override
+	@Transactional
+	public void updateFromXLS(TRIAL trial, java.util.List<File> uploads) throws FileNotFoundException, IOException, TrialException {
+		if (trial.getStatus() != TrialStatus.OPEN)
+			throw new TrialException("Cannot update a trial that is not open!");
+
+		for (File file : uploads) {
+			HSSFWorkbook wb = new HSSFWorkbook(new FileInputStream(file));
+			HSSFSheet sheet = wb.getSheetAt(wb.getActiveSheetIndex());
+			LOG.info("Loading data from active sheet: " + sheet.getSheetName());
+
+			updateTrialBySheet(trial, sheet);
+		}
+	};
+
+	/**
+	 * @param trial
+	 * @param sheet
+	 * @throws TrialException
+	 */
+	protected void updateTrialBySheet(TRIAL trial, HSSFSheet sheet) throws TrialException {
+		// this type of sheet has first column with entity id, second with text representation, then traits
+		int STARTING_COLUMN = 2;
+
+		HSSFRow headerRow = sheet.getRow(0);
+		if (headerRow == null) {
+			LOG.warn("XLS sheet " + sheet.getSheetName() + " doesn't have a header row.");
+			return;
+		}
+
+		List<Trait> usedTraits = this.getUsedTraits(trial);
+		LOG.debug("Sheet has " + headerRow.getLastCellNum() + " cells in header row");
+		for (int i = STARTING_COLUMN; i < headerRow.getLastCellNum(); i++) {
+			String headerText = headerRow.getCell(i).getStringCellValue();
+			LOG.debug("Header #" + i + ": " + headerText);
+			if (headerText.equalsIgnoreCase(usedTraits.get(i - STARTING_COLUMN).getTitle())) {
+				LOG.debug("Header matches used trait " + usedTraits.get(i - STARTING_COLUMN));
+			} else {
+				throw new TrialException("Header \"" + headerText + "\" does not match trait title \"" + usedTraits.get(i - STARTING_COLUMN) + "\".");
+			}
+		}
+		int traitsUsed = headerRow.getLastCellNum() - STARTING_COLUMN;
+
+		List<ENTITY> trialedEntities = getUsedEntities(trial);
+
+		// read sheet values
+		for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+			HSSFRow row = sheet.getRow(i);
+			ENTITY entity = this.entityManager.find(getEntityClass(), (long) row.getCell(0).getNumericCellValue());
+			if (entity == null) {
+				LOG.error("No entity id=" + row.getCell(0).getNumericCellValue() + " in the database. Skipping.");
+				continue;
+			}
+			if (!trialedEntities.contains(entity)) {
+				throw new TrialException("Entity with id=" + row.getCell(0).getNumericCellValue() + " is not part of this trial. <b>Stopping data import.</b>");
+			}
+			LOG.debug("Updating from sheet row #" + i + " for: " + entity);
+			Double[] traitValues = new Double[traitsUsed];
+			for (int j = STARTING_COLUMN; j < row.getLastCellNum(); j++) {
+				HSSFCell cell = row.getCell(j);
+				traitValues[j - STARTING_COLUMN] = cell == null ? null : cell.getNumericCellValue();
+			}
+			updateTraitValues(trial, entity, usedTraits, traitValues, 0, traitsUsed);
+		}
+
+	}
+
+	/**
+	 * @param trial
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	@Transactional(readOnly = true)
+	protected List<ENTITY> getUsedEntities(TRIAL trial) {
+		return this.entityManager.createQuery("select distinct tv.entity from " + getTraitValueClass().getName() + " tv where tv.trial=:trial").setParameter(
+				"trial", trial).getResultList();
+	}
+
+	/**
+	 * Returns a hashtable
+	 * 
+	 * @param entityIds
+	 * @param traits
+	 * @return
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	@SuppressWarnings("unchecked")
+	public Hashtable<Long, Object[]> getTraitLastValuesWide(List<Long> entityIds, List<String> traitVars) {
+		LOG.debug("Getting " + traitVars.size() + " traits for " + entityIds.size() + " entities");
+
+		Hashtable<Long, Object[]> wideData = new Hashtable<Long, Object[]>();
+		List<Object[]> longData = this.entityManager.createQuery(
+				"select tlv.entity.id, tlv.trait.var, tlv.date, tlv.value from " + getTraitLastValueClass().getName()
+						+ " tlv where tlv.entity.id in (:entityIds) and tlv.trait.var in (:traitVars) order by tlv.entity.id").setParameter("entityIds",
+				entityIds).setParameter("traitVars", traitVars).getResultList();
+		LOG.debug("Retrieved " + longData.size() + " rows in long format");
+
+		Hashtable<String, Integer> varMap = new Hashtable<String, Integer>();
+		// map var names to columns
+		for (String traitVar : traitVars) {
+			LOG.debug("Trait " + traitVar + " in column " + varMap.size());
+			varMap.put(traitVar, varMap.size());
+		}
+		int traitVarsSize = traitVars.size();
+
+		for (Object[] longRow : longData) {
+			Long entityId = (Long) longRow[0];
+			String var = (String) longRow[1];
+
+			Object[] wideRow = wideData.get(entityId);
+			if (wideRow == null) {
+				// one column for date, one for value
+				wideData.put(entityId, wideRow = new Object[traitVarsSize * 2]);
+			}
+
+			Integer columnIndex = varMap.get(var);
+			wideRow[columnIndex] = longRow[2];
+			wideRow[columnIndex + 1] = longRow[3];
+		}
+
+		return wideData;
+	}
+
+	/**
+	 * @see org.iita.trial.service.TraitService#findTrait(java.lang.Long)
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public Trait findTrait(Long id) {
+		return this.entityManager.find(Trait.class, id);
+	}
+
+	/**
+	 * @see org.iita.trial.service.TraitService#listTraits(int, int)
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public PagedResult<Trait> listTraits(int startAt, int maxRecords) {
+		PagedResult<Trait> paged = new PagedResult<Trait>(startAt, maxRecords);
+		paged.setResults(this.entityManager.createQuery("from Trait t order by t.title").setFirstResult(startAt).setMaxResults(maxRecords).getResultList());
+		if (paged.getResults().size() > 0)
+			paged.setTotalHits((Long) this.entityManager.createQuery("select count(t) from Trait t").getSingleResult());
+		return paged;
+	}
+
+	/**
+	 * @return
+	 */
+	public abstract Class<ENTITY> getEntityClass();
+
+	protected abstract Class<TRIAL> getTrialClass();
+
+	protected abstract Class<TRAITVALUE> getTraitValueClass();
+
+	protected abstract Class<TRAITLASTVALUE> getTraitLastValueClass();
+}

@@ -1,0 +1,338 @@
+/**
+ * inventory.Struts Jul 10, 2010
+ */
+package org.iita.trial.action;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+import org.iita.inventory.action.BaseAction;
+import org.iita.struts.DownloadableStream;
+import org.iita.struts.FileUploadAction;
+import org.iita.trial.model.Trial;
+import org.iita.trial.model.Trial.TrialStatus;
+import org.iita.trial.service.TrialException;
+import org.iita.trial.service.TrialService;
+import org.iita.util.DeleteFileAfterCloseInputStream;
+import org.iita.util.PagedResult;
+import org.iita.util.StringUtil;
+
+import com.opensymphony.xwork2.Action;
+
+/**
+ * @author mobreza
+ */
+@SuppressWarnings("serial")
+public class TrialProfileAction<ENTITY, TRIAL extends Trial<?>> extends BaseAction implements DownloadableStream, FileUploadAction {
+	protected Long id;
+	protected TRIAL trial;
+	protected TrialService<ENTITY, TRIAL, ?, ?> trialService;
+	private PagedResult<Object[]> paged;
+
+	public boolean showForm = false; 
+	public String numt;
+
+	public PagedResult<Object[]> lotList;
+	
+	private Double[][] data = null;
+	private InputStream downloadStream;
+	private List<File> uploads;
+	private List<Long> entityIds;
+	private int startAt=0;
+	private int maxRecords=50;
+	private int max2Records=350;
+
+	/**
+	 * 
+	 */
+	public TrialProfileAction(TrialService<ENTITY, TRIAL, ?, ?> trialService) {
+		this.trialService = trialService;
+	}
+	
+	/**
+	 * @param startAt the startAt to set
+	 */
+	public void setStartAt(int startAt) {
+		this.startAt = startAt;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	/**
+	 * @param entityIds the entityIds to set
+	 */
+	public void setEntityIds(List<Long> entityIds) {
+		this.entityIds = entityIds;
+	}
+
+	/**
+	 * @return the trial
+	 */
+	public TRIAL getTrial() {
+		return this.trial;
+	}
+
+	/**
+	 * @see org.iita.inventory.action.BaseAction#prepare()
+	 */
+	@Override
+	public void prepare() {
+		if (this.id != null) {
+			this.trial = this.trialService.findTrial(this.id);
+		}
+
+		if (this.trial != null && this.trial.getStatus() == TrialStatus.OPEN) {
+			data = this.trialService.getEmptyData(this.trial);
+		}
+	}
+
+	/**
+	 * @see org.iita.struts.BaseAction#execute()
+	 */
+	@Override
+	public String execute() {
+		if (this.trial == null) {
+			addActionError("Trial not found");
+			return Action.ERROR;
+		}
+		
+		//if(this.showForm){
+			this.lotList = this.trialService.getWideData(this.trial, this.startAt, this.max2Records);
+		//	this.paged = new PagedResult<Object[]>();
+		//for(Object[] obj : lotList)
+		//	System.out.println("SHOW FORM STATUS TRUE: "  + obj[0] + " :: "  + obj[1]  + " :: " + obj[2]);
+		//}else{
+			this.paged = this.trialService.getWideData(this.trial, this.startAt, this.maxRecords);
+		//	this.lotList = new ArrayList<Object[]>();
+		//	System.out.println("SHOW FORM STATUS FALSE: "  + this.showForm);
+		//}
+			
+		System.out.println("this.lotList " + this.lotList);
+		return Action.SUCCESS;
+	}
+
+	/**
+	 * @return the paged
+	 */
+	public PagedResult<Object[]> getPaged() {
+		return this.paged;
+	}
+
+	public String edit() {
+		if (this.trial == null) {
+			addActionError("Trial not found");
+			return Action.ERROR;
+		}
+		if (this.trial.getStatus() != TrialStatus.OPEN) {
+			addActionError("Cannot modify trial data. This trial is closed.");
+			return "profile";
+		}
+		this.paged = this.trialService.getWideData(this.trial, this.startAt, this.maxRecords);
+		return Action.SUCCESS;
+	}
+
+	/**
+	 * @param data the data to set
+	 */
+	public void setData(Double[][] data) {
+		this.data = data;
+	}
+
+	/**
+	 * @return the data
+	 */
+	public Double[][] getData() {
+		return this.data;
+	}
+
+	/**
+	 * Action method to update trial data through {@link #data} array.
+	 * 
+	 * @return
+	 */
+	public String update() {
+		if (this.trial.getStatus() != TrialStatus.OPEN) {
+			addNotificationMessage("Cannot modify trial data. This trial is closed.");
+			return "profile";
+		}
+
+		try {
+			this.trialService.updateTrialData(this.trial, this.data);
+		} catch (TrialException e) {
+			addActionError(e.getMessage());
+			return Action.ERROR;
+		}
+		return "profile";
+	}
+	
+	public String setdefaults() {
+		try {
+			this.trialService.setTrialDefaults(this.trial, this.data);
+		} catch (TrialException e) {
+			addActionError(e.getMessage());
+			return Action.ERROR;
+		}
+		return "profile";
+	}
+
+	public String close() {
+		this.trialService.closeTrial(this.trial);
+		return "profile";
+	}
+
+	public String open() {
+		this.trialService.openTrial(this.trial);
+		return "profile";
+	}
+
+	/**
+	 * Remove trial
+	 * @return
+	 */
+	public String remove() {		
+		try {
+			this.trialService.removeTrial(this.trial);
+			addActionMessage("Trial " + this.trial.getName() + " deleted.");
+			return "dashboard";
+		} catch (TrialException e) {
+			addActionError(e.getMessage());
+			return "profile";
+		}
+	}
+	
+	/**
+	 * Remove entities selected in {@list #entityIds} from this trial.
+	 * 
+	 * @return
+	 */
+	public String removeEntities() {
+		if (this.entityIds == null || this.entityIds.size() == 0) {
+			addActionError("Please select rows to delete from this trial.");
+			return "profile";
+		}
+		try {
+			this.trialService.removeEntitiesTrialed(this.trial, this.entityIds);
+			addNotificationMessage("Removed selected entities from trial.");
+			return "refresh";
+		} catch (TrialException e) {
+			addActionError("Error removing entities from this trial: " + e.getMessage());
+			return "profile";
+		}
+	}
+
+	/**
+	 * Action method to download trial data
+	 * 
+	 * @return
+	 */
+	public String download() {
+		File file;
+		try {
+			file = this.trialService.generateXLS(this.trial);
+			this.downloadStream = new DeleteFileAfterCloseInputStream(file);
+			return BaseAction.DOWNLOAD;
+		} catch (IOException e) {
+			LOG.error(e.getMessage());
+			addActionError(e.getMessage());
+			return Action.ERROR;
+		}
+	}
+
+	public String upload() {
+		try {
+			this.trialService.updateFromXLS(this.trial, this.uploads);
+			addActionMessage("Trial data updated successfully from Excel file.");
+			return "profile";
+		} catch (IOException e) {
+			LOG.error(e);
+			addActionError(e.getMessage());
+			return Action.ERROR;
+		} catch (TrialException e) {
+			LOG.error(e);
+			addActionError(e.getMessage());
+			return Action.ERROR;
+		}
+	}
+
+	/**
+	 * @see org.iita.struts.DownloadableStream#getDownloadFileName()
+	 */
+	@Override
+	public String getDownloadFileName() {
+		return StringUtil.sanitizeFileName(String.format("Trial-%1$s-data.xls", this.trial.getName()));
+	}
+
+	/**
+	 * @see org.iita.struts.DownloadableStream#getDownloadStream()
+	 */
+	@Override
+	public InputStream getDownloadStream() {
+		return this.downloadStream;
+	}
+
+	/**
+	 * @see org.iita.struts.FileUploadAction#setUploads(java.util.List)
+	 */
+	@Override
+	public void setUploads(List<File> uploads) {
+		this.uploads = uploads;
+	}
+
+	/**
+	 * @see org.iita.struts.FileUploadAction#setUploadsFileName(java.util.List)
+	 */
+	@Override
+	public void setUploadsFileName(List<String> uploadFileNames) {
+
+	}
+
+	/**
+	 * @see org.iita.struts.FileUploadAction#setUploadsContentType(java.util.List)
+	 */
+	@Override
+	public void setUploadsContentType(List<String> uploadContentTypes) {
+
+	}
+	
+	/**
+	 * @return the showForm
+	 */
+	public boolean isShowForm() {
+		return showForm;
+	}
+
+	/**
+	 * @param showForm the showForm to set
+	 */
+	public void setShowForm(boolean showForm) {
+		this.showForm = showForm;
+	}
+
+	/**
+	 * @return the lotList
+	 */
+	public PagedResult<Object[]> getLotList() {
+		return lotList;
+	}
+	
+	/**
+	 * @return the numt
+	 */
+	public String getNumt() {
+		return numt;
+	}
+
+	/**
+	 * @param numt the numt to set
+	 */
+	public void setNumt(String numt) {
+		this.numt = numt;
+	}
+}

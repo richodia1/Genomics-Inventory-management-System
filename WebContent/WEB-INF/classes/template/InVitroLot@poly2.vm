@@ -1,0 +1,34 @@
+#*
+ Thus begins a multi-line comment. Online visitors won't
+ see this text because the Velocity Templating Engine will
+ ignore it.
+*#
+
+^BY4,3,110^FT20,130^BCN,,N,N,Y
+^FD>;$number.format("00000000", $lot.barCode.id)^FS
+^FO0,150^ADN,40,16^FD${title}^FS
+#if( $lot.line )
+ ^FO340,150^ADN,40,16^FD(${lot.line})^FS
+#end
+
+#if( ${lot.item.alternativeIdentifier} )
+ ^FO0,190^ADN,24,14^FD${lot.item.alternativeIdentifier}^FS
+#end
+^FO0,230^ADN,30,14^FD${lot.item.itemType.name}^FS
+
+#if( $lot.introductionDate )
+ ^FO270,210^ADN,30,14^FDIN:$date.format("dd/MM/yyyy", $lot.introductionDate)^FS
+#end
+
+#if( $lot.regenerationDate )
+ ^FO270,250^ADN,30,14^FDSC:$date.format("dd/MM/yyyy", $lot.regenerationDate)^FS
+#end
+
+#if( $lot.virusFree )
+ ^FO170,230^ADN,30,30^FDVF^FS
+#elseif("$!lot.virusFree" == "" )
+ ^FO170,230^ADN,30,30^FDNT^FS
+#else
+ ^FO170,230^ADN,30,30^FDNVF^FS
+#end
+^FO0,270^ADN,13,13^FD${lot.barCode.id}^FS

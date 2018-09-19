@@ -1,0 +1,202 @@
+/**
+ * inventory.Struts Jun 30, 2010
+ */
+package org.iita.trial.service;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.List;
+
+import org.iita.security.model.User;
+import org.iita.trial.model.TraitGroup;
+import org.iita.trial.model.TraitLastValue;
+import org.iita.trial.model.TraitValue;
+import org.iita.trial.model.Trial;
+import org.iita.util.PagedResult;
+
+/**
+ * @author mobreza
+ */
+public interface TrialService<ENTITY, TRIAL extends Trial<?>, TRAITVALUE extends TraitValue<TRIAL, ENTITY>, TRAITLASTVALUE extends TraitLastValue<TRIAL, ENTITY>>
+		extends TraitService {
+
+	/**
+	 * Update trial
+	 * 
+	 * @param trial
+	 */
+	void update(TRIAL trial);
+
+	/**
+	 * @param startAt
+	 * @param maxResults
+	 * @return
+	 */
+	PagedResult<TRIAL> listTrials(int startAt, int maxResults);
+
+	/**
+	 * @param startAt
+	 * @param maxResults
+	 * @return
+	 */
+	PagedResult<TRIAL> listTrials(User owner, int startAt, int maxResults);
+
+	/**
+	 * @param startAt
+	 * @param maxResults
+	 * @return
+	 */
+	PagedResult<TRIAL> listOpenTrials(int startAt, int maxResults);
+
+	/**
+	 * @param lot
+	 * @return
+	 */
+	List<TRAITVALUE> getTraitValues(Class<TRAITVALUE> returnType, ENTITY entity);
+
+	/**
+	 * @param lot
+	 * @return
+	 */
+	List<TRAITLASTVALUE> getTraitLastValues(Class<TRAITLASTVALUE> returnType, ENTITY entity);
+
+	/**
+	 * @param returnType
+	 * @param var
+	 * @param lot
+	 * @return
+	 */
+	TRAITLASTVALUE getTraitLastValue(Class<TRAITLASTVALUE> returnType, String var, ENTITY lot);
+
+	/**
+	 * @param id
+	 * @return
+	 */
+	TRIAL findTrial(Long id);
+
+	/**
+	 * @param trial
+	 * @return
+	 */
+	List<? extends TraitValue<TRIAL, ENTITY>> getLongData(TRIAL trial);
+
+	/**
+	 * Get empty Double's array for data storage
+	 * 
+	 * @param trial
+	 * @return
+	 */
+	Double[][] getEmptyData(TRIAL trial);
+
+	/**
+	 * @param trial
+	 * @param entity
+	 */
+	void ensureEntityTrialed(TRIAL trial, ENTITY entity);
+
+	/**
+	 * @param trial
+	 * @param lots
+	 */
+	void ensureEntitiesTrialed(TRIAL trial, List<ENTITY> lots);
+
+	/**
+	 * Update trial data
+	 * 
+	 * @param trial
+	 * @param data
+	 * @throws TrialException
+	 */
+	void updateTrialData(TRIAL trial, Double[][] data) throws TrialException;
+
+	/**
+	 * Set default values for all trialed entities.
+	 * 
+	 * @param trial
+	 * @param data
+	 * @throws TrialException
+	 */
+	void setTrialDefaults(TRIAL trial, Double[][] data) throws TrialException;
+
+	/**
+	 * Close the trial for editing
+	 * 
+	 * @param trial
+	 */
+	void closeTrial(TRIAL trial);
+
+	/**
+	 * Remove trial
+	 * 
+	 * @param trial
+	 * @throws TrialException
+	 */
+	void removeTrial(TRIAL trial) throws TrialException;
+
+	/**
+	 * Open the trial for editing
+	 * 
+	 * @param trial
+	 */
+	void openTrial(TRIAL trial);
+
+	/**
+	 * Generate Excel file with Trial data
+	 * 
+	 * @param trial
+	 * @return
+	 * @throws IOException
+	 */
+	File generateXLS(TRIAL trial) throws IOException;
+
+	/**
+	 * @param uploads
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 * @throws TrialException
+	 */
+	void updateFromXLS(TRIAL trial, List<File> uploads) throws FileNotFoundException, IOException, TrialException;
+
+	/**
+	 * @param uploads
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 * @throws TrialException
+	 */
+	void updateFromForm(TRIAL trial, String item, Long lotid, Long barcode, Double germ6d, Double germ10d) throws TrialException;
+
+	/**
+	 * @param trial
+	 * @param lot
+	 * @throws TrialException
+	 */
+	void removeEntitiesTrialed(TRIAL trial, List<Long> entityIds) throws TrialException;
+
+	/**
+	 * @param entityIds
+	 * @param traitVars
+	 * @return
+	 */
+	Hashtable<Long, Object[]> getTraitLastValuesWide(List<Long> entityIds, List<String> traitVars);
+
+	/**
+	 * @return
+	 */
+	List<TraitGroup> listTraitGroups();
+
+	/**
+	 * @param trial
+	 * @param startAt
+	 * @param maxResults
+	 * @return
+	 */
+	PagedResult<Object[]> getWideData(TRIAL trial, int startAt, int maxResults);
+	
+	/**
+	 * @param trial
+	 * @return
+	 */
+	List<Object[]> getListWideData(TRIAL trial);
+}

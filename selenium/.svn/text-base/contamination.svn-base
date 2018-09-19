@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="" />
+<title>Contamination</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Contamination</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/inventory/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Register contamination</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>invitro/monitor_description_title</td>
+	<td>Selenuim test</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>invitro/monitor_description_description</td>
+	<td>Automated test for Contamination</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>invitro/monitor_0</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>invitro/monitor_barCode</td>
+	<td>177663</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@id='invitro/monitor_0' and @value='Scan']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTable</td>
+	<td>//div[@id='main']/table.1.3</td>
+	<td>1.0 tube</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>invitro/monitor_barCode</td>
+	<td>177663</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@id='invitro/monitor_0' and @value='Scan']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//div[@id='main']/table/tbody/tr/td[4]</td>
+	<td>2.0 tube</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>invitro/monitor_barCode</td>
+	<td>177663</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@id='invitro/monitor_0' and @value='Scan']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//div[@id='main']/table/tbody/tr/td[4]</td>
+	<td>3.0 tube</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>invitro/monitor_invitro/monitor!commit</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertConfirmation</td>
+	<td>Are you sure you want to commit the changes?<br />Double check the list before commiting.</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForPageToLoad</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForText</td>
+	<td>//form[@id='invitro/monitor']/table/tbody/tr[2]/td[2]</td>
+	<td>Committed to inventory</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//form[@id='invitro/monitor']/table/tbody/tr[2]/td[2]</td>
+	<td>Committed to inventory</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//form[@id='invitro/monitor']/table/tbody/tr[5]/td[2]</td>
+	<td>OUT CONTAMINATION</td>
+</tr>
+
+</tbody></table>
+</body>
+</html>

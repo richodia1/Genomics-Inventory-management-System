@@ -1,0 +1,29 @@
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+	<package name="project-mobile" namespace="/mobile" extends="default">
+		<action name="index">
+			<result>/WEB-INF/jsp/mobile/index.jsp</result>
+		</action>
+		<action name="lot" class="mobileLotAction">
+			<result>/WEB-INF/jsp/mobile/lot/profile.jsp</result>
+			<result name="printed">/WEB-INF/jsp/mobile/lot/printed.jsp</result>
+		</action>
+		<action name="item" class="itemAction">
+			<result>/WEB-INF/jsp/mobile/item/profile.jsp</result>
+		</action>
+		
+		<action name="updates" class="quantityUpdateAction">
+			<result>/WEB-INF/jsp/mobile/updates/index.jsp</result>
+		</action>
+		
+		<action name="invitro/monitor" class="germplasmHealthEditor">
+			<result>/WEB-INF/jsp/mobile/invitro/health-form.jsp</result>
+			<result name="updated" type="redirect-action">invitro/monitor?id=${description.id}</result>
+			<result name="input">/WEB-INF/jsp/mobile/invitro/health-form.jsp</result>
+			<result name="error">/WEB-INF/jsp/mobile/invitro/health-form.jsp</result>
+			<result name="redirect" type="redirect-action">index</result>
+		</action>
+	</package>
+</struts>

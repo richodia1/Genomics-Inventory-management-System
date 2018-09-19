@@ -1,0 +1,55 @@
+# Application specific texts
+
+# Menus
+menu.Dashboard=Dashboard
+menu.Browse=Browse
+menu.Scan=Scan
+menu.Selection=Selection
+menu.Printer=Printer
+menu.Delegate=Delegate
+menu.Requests=Requests
+menu.Administration=Administration
+menu.LogIn=Log in
+menu.LogOut=Log out
+menu.Query=Query
+
+
+# Items
+item.admin.itemRequired=Inventory item not provided or missing
+item.admin.nameRequired=Name is required
+item.admin.shortNameRequired=Short name is required
+item.admin.itemTypeRequired=Please select item type
+
+# Lots
+lot.parentType.SAME=Same as
+lot.parentType.REGENERATED=Regenerated from
+
+# Bulk
+bulk.status.0=Draft bulk update
+bulk.status.1=Committed to inventory
+bulk.status.100=Finalized
+
+
+# General stuffs
+lot.status.0=Unknown
+lot.status.1=Available
+lot.status.-3=Missing
+lot.status.-100=Deleted
+
+lot.type.seedlot=Seed lot
+lot.type.invitrolot=In-Vitro lot
+lot.type.fieldlot=Field lot
+lot.type.otherlot=Other lot
+
+lot.scale.stem=stem
+lot.scale.plant=plant
+lot.scale.tube=tube
+lot.scale.seed=seed
+lot.scale.g=g
+
+# Form
+form.submit=Submit
+form.search=Search
+
+# Dashboard
+text.findItem=Find item:

@@ -1,0 +1,355 @@
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+	<!-- Project specific actions -->
+	<package name="project-default" extends="default">
+		<action name="index" class="dashboard">
+			<result>/WEB-INF/jsp/index.jsp</result>
+			<result name="mobile" type="redirect-action">
+				<param name="namespace">/mobile</param>
+				<param name="actionName">index</param>
+			</result>
+		</action>
+		<action name="transaction/list" class="transactionsAction">
+			<result>/WEB-INF/jsp/transaction/list.jsp</result>
+			<result name="input">/WEB-INF/jsp/transaction/list.jsp</result>
+		</action>
+
+		<!-- Search -->
+		<action name="search" class="searchAction">
+			<result>/WEB-INF/jsp/search/index.jsp</result>
+		</action>
+
+		<!-- Printer select -->
+		<action name="printer" class="printerSelectAction">
+			<result name="input">/WEB-INF/jsp/printer/select.jsp</result>
+			<result name="success" type="redirect-action">index</result>
+		</action>
+		
+		<!-- testing -->
+		<action name="test" class="testRemoteInventoryAction">
+			<result>/WEB-INF/jsp/testme.jsp</result>
+		</action>
+		
+		
+		<!-- Order management -->
+		<action name="request/index" class="orderListAction">
+			<result>/WEB-INF/jsp/request/index.jsp</result>
+		</action>
+		<action name="request/order" class="orderAction">
+			<result>/WEB-INF/jsp/request/profile.jsp</result>
+			<result name="tolist" type="redirect-action">request/index</result>
+			<result name="refresh" type="redirect-action">request/order?id=${order.id}</result>
+		</action>
+		<action name="request/edit" class="orderAction">
+			<result name="readonly">/WEB-INF/jsp/request/profile.jsp</result>
+			<result name="success">/WEB-INF/jsp/request/form.jsp</result>
+			<result name="input">/WEB-INF/jsp/request/form.jsp</result>
+			<result name="tolist" type="redirect-action">request/index</result>
+			<result name="refresh" type="redirect-action">request/order?id=${order.id}</result>
+		</action>
+		<action name="request/files" class="orderFilesAction">
+			<result name="gears-ok">/WEB-INF/jsp/empty-file.jsp</result>
+			<result name="success" type="redirect-action">request/order?id=${order.id}</result>
+			<result name="reload" type="redirect-action">request/order?id=${order.id}</result>
+		</action>
+		<action name="request/assign-lots" class="orderLotsAction">
+			<result name="input">/WEB-INF/jsp/request/lot-selection.jsp</result>
+			<result name="tolist" type="redirect-action">request/index</result>
+			<result name="toorder" type="redirect-action">request/order?id=${order.id}</result>
+			<result name="refresh" type="redirect-action">request/assign-lots?id=${order.id}</result>
+		</action>
+		<action name="request/tags" class="orderTagBuilder">
+			<result name="reload" type="redirect-action">request/edit?id=${profile.id}</result>
+		</action>
+		
+		<!-- Tagging -->
+		<action name="tag" class="tagAction">
+			<result name="order" type="redirect-action">request/edit?id=${tag.entity.id}</result>
+			<result type="redirect-action">${tag.entity.class.simpleName.toLowerCase()}/profile?id=${tag.entity.id}</result>
+		</action>
+
+		<action name="tag/browse" class="tagBrowserAction">
+			<result>/WEB-INF/jsp/tags/results-paged.jsp</result>
+		</action>
+		<action name="tag/cloud" class="tagBrowserAction" method="cloud">
+			<result name="cloud">/WEB-INF/jsp/tags/cloud.jsp</result>
+			<result name="cloud-inline">/WEB-INF/jsp/tags/cloud-inline.jsp</result>
+		</action>
+
+		<action name="trial/index" class="trialListAction">
+			<result>/WEB-INF/jsp/trial/index.jsp</result>
+		</action>
+		<action name="trial/quicklist" class="trialListAction">
+			<result>/WEB-INF/jsp/trial/quicklist-trial.jsp</result>
+		</action>
+		<action name="trial/profile" class="trialProfileAction">
+			<result>/WEB-INF/jsp/trial/profile.jsp</result>
+			<result name="input">/WEB-INF/jsp/trial/profile.jsp</result>
+			<result name="refresh" type="redirect-action">trial/profile?id=${trial.id}</result>
+		</action>
+		<action name="trial/create" class="trialCreateAction">
+			<result>/WEB-INF/jsp/trial/create.jsp</result>
+			<result name="input">/WEB-INF/jsp/trial/create.jsp</result>
+			<result name="profile" type="redirect-action">trial/profile?id=${trial.id}</result>
+		</action>
+		<action name="trial/edit" class="trialProfileAction" method="edit">
+			<result>/WEB-INF/jsp/trial/edit.jsp</result>
+			<result name="input">/WEB-INF/jsp/trial/edit.jsp</result>
+			<result name="refresh" type="redirect-action">trial/edit?id=${trial.id}</result>
+			<result name="profile" type="redirect-action">trial/profile?id=${trial.id}</result>
+		</action>
+		
+		<!-- Trait groups -->
+		<action name="trial/traitgroup" class="traitGroupAction">
+			<result>/WEB-INF/jsp/trial/traitgroup/profile.jsp</result>
+		</action>
+		<action name="trial/traits" class="traitAction">
+			<result>/WEB-INF/jsp/trial/trait/index.jsp</result>
+		</action>
+		<action name="trial/trait" class="traitAction" method="profile">
+			<result>/WEB-INF/jsp/trial/trait/profile.jsp</result>
+		</action>
+		
+		
+		<!-- Item types and containers -->
+		<action name="conf/itemtypes" class="itemTypeAction">
+			<result>/WEB-INF/jsp/admin/listTypes/itemtypes.jsp</result>
+		</action>
+		<action name="conf/itemtypes/itemtype" class="itemTypeAction" method="editType">
+			<result>/WEB-INF/jsp/admin/listTypes/itemtype.jsp</result>
+			<result name="error">/WEB-INF/jsp/admin/listTypes/itemtype.jsp</result>
+			<result name="input">/WEB-INF/jsp/admin/listTypes/itemtype.jsp</result>
+			<result name="tolist" type="redirect-action">conf/itemtypes</result>
+		</action>
+		<action name="conf/deleteitemtype" class="itemTypeAction" method="removeType">
+			<result name="success" type="redirect-action">itemtypes</result>
+			<result name="error">/WEB-INF/jsp/admin/listTypes/itemtypes.jsp</result>
+			<result name="tolist" type="redirect-action">conf/itemtypes</result>
+		</action>
+
+		<action name="conf/containers" class="containerTypeAction">
+			<result>/WEB-INF/jsp/admin/listTypes/containertypes.jsp</result>
+		</action>
+		<action name="conf/containertypes/container" class="containerTypeAction" method="editContainerType">
+			<result>/WEB-INF/jsp/admin/listTypes/containertype.jsp</result>
+			<result name="error">/WEB-INF/jsp/admin/listTypes/containertype.jsp</result>
+			<result name="input">/WEB-INF/jsp/admin/listTypes/containertype.jsp</result>
+			<result name="tolist" type="redirect-action">conf/containers</result>
+		</action>
+		<action name="conf/deletecontainertype" class="containerTypeAction" method="removeContainerType">
+			<result name="success" type="redirect-action">containers</result>
+			<result name="error">/WEB-INF/jsp/admin/listTypes/containertypes.jsp</result>
+			<result name="tolist" type="redirect-action">containers</result>
+		</action>
+		
+		<!-- Item -->
+		<action name="item/index" class="itemAction" method="list">
+			<result>/WEB-INF/jsp/item/index.jsp</result>
+		</action>
+		<action name="item/edit" class="itemAction">
+			<result>/WEB-INF/jsp/item/edit.jsp</result>
+			<result name="input">/WEB-INF/jsp/item/edit.jsp</result>
+			<result name="goback" type="redirect">${referer}</result>
+			<result name="toitem" type="redirect-action">item/edit?id=${item.id}</result>
+		</action>
+		
+		<!-- Settings -->
+		<action name="settings" class="settingsAction">
+			<result name="*">/WEB-INF/jsp/settings/settings.jsp</result>
+			<result name="referer" type="redirect">${referer}</result>
+		</action>
+	</package>
+
+	<!-- PACKAGES -->
+	<package name="inventoryUpdate" namespace="/update" extends="default">
+		<action name="index" class="quantityUpdateAction">
+			<result>/WEB-INF/jsp/quantityUpdate/index.jsp</result>
+		</action>
+		<action name="update" class="quantityUpdateEditor">
+			<result name="updated" type="redirect-action">update!edit?id=${description.id}</result>
+			<result name="input">/WEB-INF/jsp/quantityUpdate/edit.jsp</result>
+			<result name="success" type="redirect-action">index</result>
+			<!--<result name="do-viability" type="redirect-action">viability?id=${description.id}</result>-->
+			<result name="to-selection" type="redirect-action">
+				<param name="namespace">/selection</param>
+				<param name="actionName">index</param>
+			</result>
+			<result name="redirect" type="redirect-action">index</result>
+		</action>
+		<action name="saveDescription" class="quantityUpdateEditor" method="saveDescription">
+			<result name="updated" type="redirect-action">update!edit?id=${description.id}</result>
+			<result name="input">/WEB-INF/jsp/quantityUpdate/edit.jsp</result>
+			<result name="error">/WEB-INF/jsp/quantityUpdate/edit.jsp</result>
+			<result name="redirect" type="redirect-action">index</result>
+		</action>
+		<action name="updateItem" class="quantityUpdateEditor" method="updateItem">
+			<result name="updated" type="redirect-action">update!edit?id=${description.id}&amp;activeScale=${activeScale}</result>
+			<result name="input">/WEB-INF/jsp/quantityUpdate/edit.jsp</result>
+		</action>
+
+		<!-- Viability testing
+		<action name="viability" class="viabilityResultsAction">
+			<result>/WEB-INF/jsp/viability/results.jsp</result>
+		</action>
+		 -->
+
+		<action name="invitro/monitor" class="germplasmHealthEditor">
+			<result>/WEB-INF/jsp/invitro/health/form.jsp</result>
+			<result name="updated" type="redirect-action">invitro/monitor?id=${description.id}</result>
+			<result name="input">/WEB-INF/jsp/invitro/health/form.jsp</result>
+			<result name="error">/WEB-INF/jsp/invitro/health/form.jsp</result>
+			<result name="redirect" type="redirect-action">index</result>
+		</action>
+		<action name="invitro/subculture" class="subcultureEditor">
+			<result>/WEB-INF/jsp/invitro/subculture/form.jsp</result>
+			<result name="updated" type="redirect-action">invitro/subculture?id=${description.id}</result>
+			<result name="input">/WEB-INF/jsp/invitro/subculture/form.jsp</result>
+			<result name="error">/WEB-INF/jsp/invitro/subculture/form.jsp</result>
+			<result name="redirect" type="redirect-action">index</result>
+		</action>
+		<action name="invitro/subcultured" class="subcultureResults">
+			<result name="input">/WEB-INF/jsp/invitro/subculture/results.jsp</result>
+			<result name="success" type="redirect-action">invitro/subculture?id=${description.id}</result>
+		</action>
+		<action name="migrate" class="migrationAction">
+			<result>/WEB-INF/jsp/lot/migration.jsp</result>
+			<result name="error">/WEB-INF/jsp/lot/migration.jsp</result>
+			<result name="input">/WEB-INF/jsp/lot/migration.jsp</result>
+		</action>
+	</package>
+	<package name="browse" namespace="/browse" extends="default">
+		<action name="index" class="browseAction">
+			<result>/WEB-INF/jsp/browse/index.jsp</result>
+			<result name="refresh" type="redirect">location/${locid}?startAt=${startAt}</result>
+		</action>
+		<action name="variables" class="variablesAction">
+			<result>/WEB-INF/jsp/browse/variables.jsp</result>
+			<result name="deleted" type="redirect-action">variables</result>
+		</action>
+		<action name="updateVariable" class="variablesAction" method="update">
+			<result name="error">/WEB-INF/jsp/browse/variables.jsp</result>
+			<result name="success" type="redirect-action">variables</result>
+		</action>
+		<action name="inventorize" class="inventorizeAction">
+			<result>/WEB-INF/jsp/browse/inventory.jsp</result>
+			<result name="refresh" type="redirect-action">index?locid=${locid}</result>
+		</action>
+		<action name="summary" class="exportAction">
+			<result>/WEB-INF/jsp/summary/index.jsp</result>
+		</action>
+		<action name="download-xls" class="exportAction" method="downloadXLS">
+			<result name="success" type="stream">
+				<param name="contentType">application/x-binary</param>
+				<param name="inputName">downloadStream</param>
+				<param name="contentDisposition">inline;filename="${downloadFilename}"</param>
+				<param name="contentLength">${downloadSize}</param>
+				<param name="bufferSize">1024</param>
+			</result>
+			<result name="error">/WEB-INF/jsp/summary/index.jsp</result>
+		</action>
+	</package>
+	<package name="selection" namespace="/selection" extends="default">
+		<action name="index" class="selectionAction">
+			<result>/WEB-INF/jsp/selection/index.jsp</result>
+			<result name="refresh" type="redirect-action">index</result>
+			<result name="input">/WEB-INF/jsp/selection/index.jsp</result>
+		</action>
+		<action name="selection" class="selectionAction">
+			<result name="refresh" type="redirect-action">index</result>
+			<result name="goback" type="redirect">${referer}</result>
+		</action>
+	</package>
+	<package name="search" namespace="/search" extends="default">
+		<action name="advanced" class="advancedSearchAction">
+			<result>/WEB-INF/jsp/search/advanced.jsp</result>
+		</action>
+	</package>
+	<package name="lot" namespace="/lot" extends="default">
+		<action name="index" class="lotAction">
+			<result>/WEB-INF/jsp/lot/profile.jsp</result>
+			<result name="refresh" type="redirect-action">index?id=${id}</result>
+			<result name="input">/WEB-INF/jsp/lot/scan.jsp</result>
+		</action>
+		<action name="update" class="lotAction" method="update">
+			<result name="success" type="redirect-action">index?id=${id}</result>
+			<result name="input">/WEB-INF/jsp/lot/edit.jsp</result>
+			<result name="refresh" type="redirect-action">index?id=${id}</result>
+			<result name="goback" type="redirect">${referer}</result>
+		</action>
+		<action name="updateLotVariable" class="lotAction" method="updateLotVariables">
+			<result name="success" type="redirect-action">index?id=${id}</result>
+			<result name="input">/WEB-INF/jsp/lot/edit.jsp</result>
+			<result name="refresh" type="redirect-action">index?id=${id}</result>
+			<result name="goback" type="redirect">${referer}</result>
+		</action>
+		<action name="updateFieldVariable" class="lotAction" method="updateFieldVariables">
+			<result name="success" type="redirect-action">index?id=${id}</result>
+			<result name="input">/WEB-INF/jsp/lot/edit.jsp</result>
+			<result name="refresh" type="redirect-action">index?id=${id}</result>
+			<result name="goback" type="redirect">${referer}</result>
+		</action>
+		<action name="register" class="registerLotAction">
+			<result name="input">/WEB-INF/jsp/lot/register.jsp</result>
+			<result name="success" type="redirect">../lot/${lot.id}</result>
+			<result name="error">/WEB-INF/jsp/lot/register.jsp</result>
+		</action>
+	</package>
+	<package name="location" namespace="/location" extends="default">
+		<action name="index" class="locationAction">
+			<result>/WEB-INF/jsp/location/index.jsp</result>
+			<result name="input">/WEB-INF/jsp/location/index.jsp</result>
+			<result name="redirect" type="redirect-action">index?locid=${locid}</result>
+		</action>
+	</package>
+
+
+	<!-- Ajax actions -->
+	<package name="ajax-project" extends="public-ajax" namespace="/ajax">
+		<action name="service" class="inventoryAjaxService">
+			<result type="json">
+				<param name="enableSMD">true</param>
+			</result>
+		</action>
+	</package>
+
+	<!-- ADMINISTRATIVE STUFFS -->
+	<package name="admin-custom" namespace="/admin" extends="default">
+		<action name="index" class="adminDashboard">
+			<result>/WEB-INF/jsp/admin/index.jsp</result>
+		</action>
+
+		<action name="reindex" class="reindexAction">
+			<result>/WEB-INF/jsp/search/reindex.jsp</result>
+			<result name="redirect" type="redirect-action">reindex</result>
+		</action>
+		<action name="import" class="importAction">
+			<result>/WEB-INF/jsp/admin/import/index.jsp</result>
+			<result name="error">/WEB-INF/jsp/admin/import/index.jsp</result>
+		</action>
+		<action name="xls-update" class="updateLotsAction">
+			<result>/WEB-INF/jsp/admin/xls-update/index.jsp</result>
+			<result name="error">/WEB-INF/jsp/admin/xls-update/index.jsp</result>
+			<result name="input">/WEB-INF/jsp/admin/xls-update/index.jsp</result>
+		</action>
+		<action name="xls-import" class="importLotAction">
+			<result>/WEB-INF/jsp/admin/xls-import/start.jsp</result>
+			<result name="mapping">/WEB-INF/jsp/admin/xls-import/mapping.jsp</result>
+			<result name="preview">/WEB-INF/jsp/admin/xls-import/preview.jsp</result>
+		</action>
+	</package>
+
+	<package name="adminPrint" namespace="/admin/print" extends="default">
+		<action name="index" class="printerAction" method="list">
+			<result>/WEB-INF/jsp/admin/print/index.jsp</result>
+		</action>
+		<action name="update" class="printerAction" method="save">
+			<result name="success" type="redirect-action">index</result>
+			<result name="input">/WEB-INF/jsp/admin/print/edit.jsp</result>
+			<result name="error">/WEB-INF/jsp/admin/print/edit.jsp</result>
+		</action>
+	</package>
+
+	<include file="struts-project-mobile.xml" />
+</struts>

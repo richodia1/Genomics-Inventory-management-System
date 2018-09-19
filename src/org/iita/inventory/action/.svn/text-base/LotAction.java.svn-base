@@ -1,0 +1,509 @@
+/**
+ * 
+ */
+package org.iita.inventory.action;
+
+//import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.iita.inventory.balance.BalanceException;
+import org.iita.inventory.barcode.BarcodingException;
+import org.iita.inventory.model.ContainerType;
+import org.iita.inventory.model.FieldVariablesList;
+import org.iita.inventory.model.Lot;
+import org.iita.inventory.model.LotTraitLastValue;
+import org.iita.inventory.model.LotVariable;
+import org.iita.inventory.model.SeedLot;
+import org.iita.inventory.model.Variables;
+import org.iita.inventory.service.BalanceService;
+import org.iita.inventory.service.BarcodingService;
+import org.iita.inventory.service.InventoryException;
+import org.iita.inventory.service.InventoryTrialService;
+import org.iita.inventory.service.ItemService;
+import org.iita.inventory.service.LotService;
+import org.iita.inventory.service.LotVariableService;
+import org.iita.inventory.service.VariablesService;
+
+import com.opensymphony.xwork2.Action;
+import com.opensymphony.xwork2.Preparable;
+
+/**
+ * Lot action
+ * 
+ * @author mobreza
+ */
+public class LotAction extends BaseAction implements Preparable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	/** Lot service provides access to data */
+	private LotService lotService;
+	private LotVariableService lotVariableService;
+	private ItemService itemService;
+	private VariablesService variablesService;
+	private double totalLocationQuantity;
+	//private InventoryService inventoryService;
+
+	/** Balance service */
+	private BalanceService balanceService;
+
+	/** Barcoding service */
+	private BarcodingService barcodingService;
+	private List<LotTraitLastValue> traitLastValues;
+	
+	private List<LotVariable> lotVariables;
+	private List<Variables> variables;
+	private Variables variable;
+	private LotVariable lotVariable;
+	private Long varid = null;
+	private Long lotVarid = null;
+	private double variableQuantity;
+	private Date variableDate;
+	private List<FieldVariablesList> fieldVariablesList = null;
+	//private List<LotVariable> lotVariablesByBarCode;
+	//private List<org.iita.inventory.remote.LotVariable>  lotVariablez;
+	
+
+	/**
+	 * @param lot the lot to set
+	 */
+	public void setLot(Lot lot) {
+		this.lot = lot;
+	}
+	
+	/**
+	 * @param inventoryTrialService the inventoryTrialService to set
+	 */
+	public void setInventoryTrialService(InventoryTrialService inventoryTrialService) {
+		this.inventoryTrialService = inventoryTrialService;
+	}
+
+	/**
+	 * @param balanceService the balanceService to set
+	 */
+	public void setBalanceService(BalanceService balanceService) {
+		this.balanceService = balanceService;
+	}
+
+	/**
+	 * @return the balanceService
+	 */
+	public BalanceService getBalanceService() {
+		return this.balanceService;
+	}
+
+	/** Used when loading by ID */
+	private Long id = null;
+
+	/** Loaded lot object */
+	private Lot lot;
+
+	/** Used when loading by barcode */
+	private Long barcode = null;
+	private InventoryTrialService inventoryTrialService;
+
+	public LotAction(LotService lotService, LotVariableService lotVariableService, ItemService itemService, VariablesService variablesService, BarcodingService barcodingService) {
+		this.lotService = lotService;
+		this.lotVariableService = lotVariableService;
+		this.itemService = itemService;
+		this.variablesService = variablesService;
+		this.barcodingService = barcodingService;
+	}
+
+	/**
+	 * Execute
+	 */
+	public String execute() {
+		if (this.lot == null)
+			return Action.INPUT;
+
+		this.totalLocationQuantity = this.lotService.getTotalQuantityInLocation(this.lot);
+		
+		this.traitLastValues=this.inventoryTrialService.getTraitLastValues(LotTraitLastValue.class, this.lot);
+		
+		return Action.SUCCESS;
+	}
+
+	/**
+	 * @return the barcode
+	 */
+	public Long getBarcode() {
+		return this.barcode;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public Long getId() {
+		return this.id;
+	}
+
+	/**
+	 * @return the lot
+	 */
+	public Lot getLot() {
+		return this.lot;
+	}
+
+	/**
+	 * Prepare called after properties are set. If both id and barcode are passed as parameters, id takes precedence.
+	 */
+	//@SuppressWarnings("unchecked")
+	@Override
+	public void prepare() {
+		super.prepare();
+
+		if (this.id != null) {
+			this.barcode = null;
+			this.lot = this.lotService.load(this.id);
+			if (this.lot == null)
+				addActionError("No lot registered with ID: " + this.id);
+			
+			//ArrayList barCodes = new ArrayList();
+			///barCodes.add(185184L);
+			//barCodes.add(185185L);
+			//barCodes.add(185186L);
+			//barCodes.add(185187L);
+			//barCodes.add(185188L);
+			//barCodes.add(185189L);
+			//barCodes.add(185190L);
+			//barCodes.add(185191L);
+			//barCodes.add(185192L);
+			//barCodes.add(185193L);
+			//barCodes.add(185194L);
+			//barCodes.add(185195L);
+			//this.lotVariablesByBarCode = this.lotService.getLotVariablesByBarcode(barCodes);
+			//org.iita.inventory.remote.LotVariable lotVar = new org.iita.inventory.remote.LotVariable();
+			//lotVar.setLotId(2L);
+			//lotVar.setQuantity(2.0d);
+			//lotVar.setVariableId(2L);
+
+			//lotVar.setVariabledate(new Date());
+			//this.inventoryService.
+			//System.out.println(lotVar);
+			//lotVariablez.add(lotVar);
+			//this.inventoryService.updateLotVariables(lotVariablez);
+			
+		} else if (this.barcode != null) {
+			this.lot = this.lotService.loadByBarcode(this.barcode);
+			if (this.lot == null)
+				addActionError("No lot registered with barcode: " + this.barcode);
+		}
+		
+		if(this.varid!=null){
+			this.variable = this.variablesService.loadVariable(this.varid);
+		}
+		
+		if(this.lotVarid!=null){
+			this.lotVariable = this.lotVariableService.loadLotVariable(this.lotVarid);
+		}
+		
+		this.lotVariables = this.lotVariableService.loadLotVariables(this.lot);
+		this.fieldVariablesList = this.lotVariableService.loadFieldVariablesList();
+		
+		System.out.println("Size of Field Var List: " + fieldVariablesList.size());
+		try {
+			this.variables = this.variablesService.listVariables();
+		} catch (Exception e) {
+			addActionError(e.getMessage());
+		}
+	}
+
+	/**
+	 * @param barcode the barcode to set
+	 */
+	public void setBarcode(Long barcode) {
+		this.barcode = barcode;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public List<ContainerType> getContainerTypes() {
+		return this.itemService.getContainerTypes();
+	}
+
+	/**
+	 * Action to update lot record
+	 * 
+	 * @return
+	 */
+	//@DeniedParameters( { "lot\\.(quantity|scale|weight)" })
+	public String update() {
+		// check if 100 seed weight is provided, and convert to seed count
+		if (this.lot instanceof SeedLot) {
+			SeedLot seedLot = (SeedLot) this.lot;
+			if (seedLot.getWeight100() == null || seedLot.getWeight100() <= 0.0d) {
+				// do nothing
+			} else if (!seedLot.getScale().equalsIgnoreCase("seed")) {
+				double seedCount = (double) Math.round(seedLot.getWeight() / seedLot.getWeight100() * 100);
+				// set quantity as seed count
+				seedLot.setQuantity(seedCount);
+				seedLot.setScale("seed");
+			}
+		}
+
+		// store data!
+		this.lotService.store(this.lot);
+		return Action.SUCCESS;
+	}
+	
+	public String updateLotVariables() {
+		if(this.lotVariable==null)
+			this.lotVariable = new LotVariable();
+		
+		if(this.lot!=null && this.variable!=null){
+			this.lotVariable.setVariabledate(this.variableDate);
+			this.lotVariable.setQuantity(this.variableQuantity);
+			this.lotVariable.setLot(this.lot);
+			this.lotVariable.setVariable(this.variable);
+			this.lotVariableService.updateLotVariables(this.lotVariable);
+		}else
+			addActionMessage("Failed to update!");
+
+		return "refresh";
+	}
+	
+	public String updateFieldVariables() {
+		if(this.lot!=null){
+			this.lotService.updateFieldVariables(this.lot);
+		}else
+			addActionMessage("Failed to update lot field variables!");
+
+		return "refresh";
+	}
+	
+	public String removeLotVariable() {
+		if(this.lotVariable!=null)
+			this.lotVariableService.deleteLotVariables(this.lotVariable);
+			
+		return "refresh";
+	}
+	
+	public String duplicate() {
+		if (this.lot == null) {
+			this.addActionError("Cannot duplicate NULL lot");
+			return Action.ERROR;
+		}
+		try {
+			this.lot = this.lotService.duplicate(this.lot);
+		} catch (InstantiationException e) {
+			this.lot = null;
+		} catch (IllegalAccessException e) {
+			this.lot = null;
+		} catch (InventoryException e) {
+			addActionError(e.getMessage());
+		}
+		return Action.INPUT;
+	}
+
+	public String assignBarcode() {
+		if (this.lot == null) {
+			addActionError("No lot selected");
+			return Action.ERROR;
+		}
+		if (this.lot.getBarCode() != null) {
+			addActionMessage("This lot already has barcode assigned.");
+			return Action.SUCCESS;
+		}
+
+		try {
+			this.barcodingService.assignBarCode(this.lot);
+			addActionMessage("Barcode " + this.lot.getBarCode().getId() + " assigned to lot.");
+			return Action.SUCCESS;
+		} catch (BarcodingException e) {
+			addActionError(e.getMessage());
+			return Action.ERROR;
+		}
+	}
+	
+	/**
+	 * Try reading the weight off the balance. Does not update lot record.
+	 * 
+	 * @return
+	 */
+	public String readBalance() {
+		Double x = null;
+		try {
+			x = this.balanceService.getCurrentWeight();
+		} catch (BalanceException e) {
+			// on reading error, just print the error message and quit
+			LOG.error("Error reading balance: " + e.getMessage());
+			// this.addActionError(e.getMessage());
+			this.addFieldError("lot.weight", e.getMessage());
+			return Action.INPUT;
+		}
+
+		LOG.debug("Got weight: " + x);
+
+		// skip on no weight
+		if (x == null)
+			return Action.INPUT;
+		if (x < 0.0d)
+			return Action.INPUT;
+
+		if (this.lot instanceof SeedLot) {
+			SeedLot seedLot = (SeedLot) this.lot;
+
+			if (seedLot.getWeight100() == null || seedLot.getWeight100() <= 0.0d) {
+				if (seedLot.getQuantity() != null && seedLot.getScale().equalsIgnoreCase("seed")) {
+					seedLot.setWeight100(x / seedLot.getQuantity() * 100.0d);
+				} else {
+					LOG.debug("Just setting the weight");
+					// just set the weight
+					seedLot.setQuantity(x);
+					seedLot.setWeight(x);
+					seedLot.setScale("g");
+					seedLot.setStatus(1);
+				}
+			} else {
+				double seedCount = (double) Math.round(x / seedLot.getWeight100() * 100);
+				LOG.debug("Setting seedCount: " + seedCount);
+				// set quantity as seed count
+				seedLot.setQuantity(seedCount);
+				seedLot.setWeight(x);
+				seedLot.setScale("seed");
+				seedLot.setStatus(1);
+			}
+		}
+		return Action.INPUT;
+	}
+
+	/**
+	 * @return the totalLocationQuantity
+	 */
+	public double getTotalLocationQuantity() {
+		return this.totalLocationQuantity;
+	}
+
+	/**
+	 * @return the traitLastValues
+	 */
+	public List<LotTraitLastValue> getTraitLastValues() {
+		return this.traitLastValues;
+	}
+
+	/**
+	 * @return the lotVariables
+	 */
+	public List<LotVariable> getLotVariables() {
+		return lotVariables;
+	}
+	
+	///**
+	// * @return the lotVariablez
+	// */
+	//public List<org.iita.inventory.remote.LotVariable> getLotVariablez() {
+	//	return lotVariablez;
+	//}
+	
+	///**
+	// * @return the lotVariablesByBarCode
+	// */
+	//public List<LotVariable> getLotVariablesByBarCode() {
+	//	return lotVariablesByBarCode;
+	//}
+	
+	/**
+	 * @return the variables
+	 */
+	public List<Variables> getVariables() {
+		return this.variables;
+	}
+	
+	public LotTraitLastValue getTraitLastValue(String var, Lot lot) {
+		LotTraitLastValue traitLastValue = this.inventoryTrialService.getTraitLastValue(LotTraitLastValue.class, var, lot);
+		LOG.info("Got trait last value: " + traitLastValue);
+		return traitLastValue;
+	}
+
+	/**
+	 * @param variable the variable to set
+	 */
+	public void setVariable(Variables variable) {
+		this.variable = variable;
+	}
+
+	/**
+	 * @param varid the varid to set
+	 */
+	public void setVarid(Long varid) {
+		this.varid = varid;
+	}
+
+	/**
+	 * @return the varid
+	 */
+	public Long getVarid() {
+		return varid;
+	}
+	
+	/**
+	 * @param lotVarid the lotVarid to set
+	 */
+	public void setLotVarid(Long lotVarid) {
+		this.lotVarid = lotVarid;
+	}
+
+	/**
+	 * @return the lotVarid
+	 */
+	public Long getLotVarid() {
+		return lotVarid;
+	}
+
+	/**
+	 * @return the lotVariable
+	 */
+	public LotVariable getLotVariable() {
+		return lotVariable;
+	}
+
+	/**
+	 * @param lotVariable the lotVariable to set
+	 */
+	public void setLotVariable(LotVariable lotVariable) {
+		this.lotVariable = lotVariable;
+	}
+
+	/**
+	 * @param variableQuantity the variableQuantity to set
+	 */
+	public void setVariableQuantity(double variableQuantity) {
+		this.variableQuantity = variableQuantity;
+	}
+
+	/**
+	 * @return the variableQuantity
+	 */
+	public double getVariableQuantity() {
+		return variableQuantity;
+	}
+
+	/**
+	 * @param variableDate the variableDate to set
+	 */
+	public void setVariableDate(Date variableDate) {
+		this.variableDate = variableDate;
+	}
+
+	/**
+	 * @return the variableDate
+	 */
+	public Date getVariableDate() {
+		return variableDate;
+	}
+
+	/**
+	 * @return the fieldVariablesList
+	 */
+	public List<FieldVariablesList> getFieldVariablesList() {
+		return fieldVariablesList;
+	}
+}

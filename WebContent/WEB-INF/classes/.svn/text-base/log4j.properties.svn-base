@@ -1,0 +1,38 @@
+### direct log messages to stdout ###
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.Target=System.err
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=%d{ABSOLUTE} %5p %c{1}:%L - %m%n
+
+### log messages to file ###
+#log4j.appender.file=org.apache.log4j.RollingFileAppender
+#log4j.appender.file.File=./accession.log
+#og4j.appender.file.MaxFileSize=100KB
+# Keep a lot of backup files
+#log4j.appender.file.MaxBackupIndex=100
+#log4j.appender.file.Threshold=INFO
+#log4j.appender.file.layout=org.apache.log4j.PatternLayout
+#log4j.appender.file.layout.ConversionPattern=%d{ABSOLUTE} %5p %c{1}:%L - %m%n
+
+log4j.appender.memory=org.iita.log4j.MemoryAppender
+log4j.appender.memory.MaxEvents=200
+log4j.appender.memory.layout=org.apache.log4j.PatternLayout
+log4j.appender.memory.layout.ConversionPattern=%c{1}:%L - %m%n
+
+### set log levels - for more verbose logging change 'info' to 'debug' ###
+log4j.rootLogger=warn, stdout, memory
+
+# Debug org.iita namespace
+log4j.logger.org.iita=info
+#log4j.logger.org.iita.servlet.html.filter=trace
+#log4j.logger.org.iita.service=trace
+#log4j.logger.org.iita.trial.service=trace
+#log4j.logger.org.iita.inventory.service=trace
+#log4j.logger.org.iita.inventory.service.impl=trace
+# WS AUTH
+#log4j.logger.org.iita.security.service.impl=trace
+#log4j.logger.org.springframework.ws=trace
+#log4j.logger.org.apache.ws=trace
+#log4j.logger.org.iita.struts.StrictParamsInterceptor=trace
+#log4j.logger.com.opensymphony.xwork2.ActionSupport=warn
+#org.apache.cxf=debug

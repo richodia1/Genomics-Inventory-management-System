@@ -1,0 +1,47 @@
+package org.iita.inventory.service;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import org.iita.inventory.model.ItemType;
+import org.iita.inventory.model.Location;
+import org.iita.util.PagedResult;
+
+/**
+ * Lot summarization service.
+ * 
+ * @author mobreza
+ * 
+ */
+public interface SummaryService {
+	/**
+	 * Returns a summary of lot information at a particular location including it's sub-locations
+	 * 
+	 * @param location root location
+	 * @param startAt initial record
+	 * @param maxRecords maximum records to return
+	 * @return Lot summary at location
+	 */
+	PagedResult<List<Object>> summarizeByItemType(Location location, ItemType itemType, String scale, int startAt, int maxRecords);
+
+	PagedResult<List<Object>> summarizeByItem(Location location, ItemType itemType, String scale, int startAt, int maxRecords);
+
+	/**
+	 * @param location
+	 * @param itemType
+	 * @param scale
+	 * @return
+	 * @throws IOException 
+	 */
+	File summarizeToXLS(Location location, ItemType itemType, String scale) throws IOException;
+
+	/**
+	 * @param selectedLots
+	 * @return
+	 * @throws IOException 
+	 */
+	File summarizeToXLS(List<Long> selectedLots) throws IOException;
+
+	File summarizeToXLSWithFieldVariables(List<Long> selectedLots) throws IOException;
+}

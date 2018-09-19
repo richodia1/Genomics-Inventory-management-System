@@ -1,0 +1,74 @@
+<html>
+<head>
+<title>Germplasm Request management</title>
+</head>
+<body>
+<h1>Germplasm Request management</h1>
+<p>Inventory system allows for managing incoming requests for germplasm distribution, including SMTA generation. Any incoming request for germplasm (via
+phone, email, visit) should be captured using the Inventory system. This allows for easy reporting to Governing Body and ensures requests are properly handled.</p>
+<p class="help-img"><img src="img/request-profile.png" />Example request</p>
+
+
+<div id="germplasm-request">
+<h2>Germplasm request</h2>
+<p>With any request for germplasm you have to capture information on Requester and requested items:</p>
+<ul>
+	<li id="request/edit_order_title"><b>Title:</b> Give meaningful title to incoming request</li>
+	<li id="request/edit_order_lastName"><b>Last name:</b> Last name of Requester (required)</li>
+	<li id="request/edit_order_firstName"><b>First name:</b> First name of Requester</li>
+	<li id="request/edit_order_mail"><b>E-Mail:</b> Email address of Requester</li>
+	<li id="request/edit_order_organization"><b>Organization</b></li>
+	<li><b>Organization category:</b> used for reporting purposes</li>
+	<li><b>Shipping address</b></li>
+	<li><b>Country:</b> germplasm destination country, used for reporting purposes</li>
+	<li><b>Order date:</b> date when request for germplasm started</li>
+	<li><b>Purpose:</b> purpose of use of germplasm, used for reporting purposes</li>
+	<li><b>Description:</b> additional description and notes about germplasm request</li>
+	<li><b>Contact info (Full name):</b> any additional Requester contact information (e.g. full name)</li>
+	<li><b>Contact info (Phone):</b> any additional Requester contact information (e.g. phone numbers)</li>
+	<li><b>Shipping cost:</b> cost of shipping, used for analysis purposes</li>
+	<li id="request/edit_order_agreementOption"><b>SMTA option:</b> germplasm is distributed under SMTA, select one of Signature, Shrink-wrap, Click-wrap</li>
+	<li id="request/edit_order_smta611"><b>Option 6.11:</b> tick if Requester opted for payment under SMTA 6.11</li>
+	<li id="request/edit_order_providerName"><b>Provider name:</b> name of person responsible on provider side, used in SMTA generation</li>
+	<li id="request/edit_order_providerOrganization"><b>Provider organization:</b> name of Provider, used in SMTA generation</li>
+</ul>
+</div>
+
+<div id="items">
+<h2>Requested items</h2>
+<p>Requested items can be registered with the request by entering item names (accession names) of requested germplasm into the provided field.</p>
+<p class="help-img"><img src="img/request-additems.png" />Registering requested items</p>
+<p id="request/order_accessionNames">Enter item names, separated by [space] or [newline] character and press <b>Add items</b> button.</p>
+</div>
+<p>List of items requested by requestor displays current status of each requested item. Status is one of PENDING or DISPATCHED.</p>
+<p class="help-img"><img src="img/request-items.png" style="width: 700px" />Example list of requested items</p>
+
+
+<div id="lot-selection">
+<h2>Lot selection</h2>
+<p>A requested item (accession) will usually have more than one available lot. Before germplasm can be distributed to Requester, source lots for distribution
+must be selected. To assign lots to requested items, click <b>Assign lots</b> button.</p>
+<p>For every item requested, list of all lots with quantity &gt; zero are displayed. Select the lot that you wish to be used in distribution and type in the
+quantity to be distributed. In case that requested item does not exist in Inventory system or quantity is available, you will not be able to assign a lot. The
+requested item will remain pending until later time, when a lot is available.</p>
+
+<p class="help-img"><img src="img/request-assign.png" />Assigning lots to requested items</p>
+</div>
+
+<h2>Germplasm distribution</h2>
+<p>Once lots have been assigned to requested items, <b>Inventory Updates</b> can be created and they will be linked to the particular request.</p>
+<p><b>Note:</b> You can have more than one Inventory update per individual germplasm request.</p>
+<p>Clicking <b>Create distribution</b> will generate a new Inventory update if there are any <em>pending</em> items to be distributed. The Inventory update
+record will display a list of all <em>pending</em> items under the .</p>
+<p class="help-img"><img src="img/request-dist.png" />Germplasm distribution based on request</p>
+<p>It is because Inventory update record is linked to a germplasm request, a list of <b>selected lots</b> can be displayed before any lots are scanned in.
+These are clearly marked as <b>PENDING</b>.</p>
+<p><b>Note:</b> Appropriate lots must be collected from storage and scanned into the distribution.</p>
+<p>Committing the inventory update to the system will mark matching requested lots as <b>DISPATCHED</b>. When all requested items have been marked as
+dispatched, no further inventory updates are required and the germplasm request is considered CLOSED.</p>
+
+<h2>Reporting to Governing Body</h2>
+<p>Using query service one can query for required details of reporting on germplasm distribution. Some additional columns may have to be added after report
+is generated by Inventory System.</p>
+</body>
+</html>

@@ -1,0 +1,35 @@
+
+/** Lot listings */
+tr.lotstatus--100 td { color: Gray; }
+
+div.accessionbox {
+	margin: 0.5em 0.5em 1.5em 0.5em;
+	padding: 0.5em;
+	float: left;
+	width: 20em;
+	height: 11em;
+	overflow: hidden;
+	line-height: 1.3em
+}
+
+input.barcodescanner:focus {
+	background-color: Red;
+}
+
+span.important { color: Red; }
+
+
+.unselect-tool { display: none; }
+.select-tool { display: block; }
+
+.accession-selected .unselect-tool {
+	display: block;
+}
+
+.accession-selected .select-tool {
+	display: none;
+}
+
+tr.row-mark > td, table.data-listing tbody tr.row-mark td.identifying {
+	 background-color: #EACE7C;
+} 

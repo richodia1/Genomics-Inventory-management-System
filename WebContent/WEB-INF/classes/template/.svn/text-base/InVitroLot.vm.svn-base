@@ -1,0 +1,39 @@
+#*
+ Thus begins a multi-line comment. Online visitors won't
+ see this text because the Velocity Templating Engine will
+ ignore it.
+*#
+
+^BY4,3,110^FT10,130^BCN,,N,N,Y
+^FD>;$number.format("00000000", $lot.barCode.id)^FS
+^FO0,150^ADN,40,16^FD${title}^FS
+^FO0,200^ADN,24,14^FD${lot.item.alternativeIdentifier}^FS
+^FO0,230^ADN,30,14^FD${lot.item.itemType.name}^FS
+
+#if( $lot.yearProcessed )
+ #set( $X = $label.labelWidth - 230 )
+ ^FO${X},230^ADN,30,14^FD${lot.yearProcessed}^FS
+#end
+
+#if( $lot.introductionDate )
+ #set( $X = $label.labelWidth - 200 )
+ ^FO${X},190^ADN,30,14^FDIN:$date.format("dd/MM/yyyy", $lot.introductionDate)^FS
+#end
+
+#if( $lot.regenerationDate )
+ #set( $X = $label.labelWidth - 200 )
+ ^FO${X},230^ADN,30,14^FDSC:$date.format("dd/MM/yyyy", $lot.regenerationDate)^FS
+#end
+
+#if( $lot.line )
+ #set( $X = $label.labelWidth - 110 )
+ ^FO%1d,150^ADN,40,16^FD(${lot.line})^FS
+#end
+
+#if( $lot.container.id == 10 )
+ ^FO270,250^ADN,30,30^FDENV^FS
+#end
+
+#set( $X = $labelInfo.labelWidth/2 - 70 )
+#set( $Y = $labelInfo.labelHeight/2 - 40 )
+^FO${X},${Y}^ADN,13,13^FD${lot.barCode.id}^FS

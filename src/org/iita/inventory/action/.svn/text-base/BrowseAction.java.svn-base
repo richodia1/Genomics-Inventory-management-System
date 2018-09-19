@@ -1,0 +1,240 @@
+/**
+ * 
+ */
+package org.iita.inventory.action;
+
+import java.util.Collection;
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.iita.inventory.label.NoPrinterException;
+import org.iita.inventory.label.PrinterException;
+import org.iita.inventory.model.InVitroLot;
+import org.iita.inventory.model.Location;
+import org.iita.inventory.model.Lot;
+import org.iita.inventory.service.LabelService;
+import org.iita.inventory.service.LocationService;
+import org.iita.inventory.service.LotService;
+import org.iita.inventory.service.SelectionService;
+import org.iita.util.PagedResult;
+
+import com.opensymphony.xwork2.Action;
+import com.opensymphony.xwork2.Preparable;
+
+/**
+ * Inventory browsing.
+ * 
+ * @author mobreza
+ * 
+ */
+@SuppressWarnings("serial")
+public class BrowseAction extends BaseAction implements Preparable {
+	/** Logger */
+	private static final Log log = LogFactory.getLog(LotService.class);
+
+	/** Label service */
+	private LabelService labelService = null;
+
+	/** Location ID passed through HTTP query string */
+	private Long locid;
+
+	/** Paging */
+	private int startAt = 0;
+
+	/** Paging */
+	private int pageSize = 50;
+
+	/** Paging */
+	private long totalRecords = 0;
+
+	/** Lots in the selected location */
+	private List<Lot> results;
+
+	/** Lot service */
+	private LotService service;
+
+	/** Location for which to display lots */
+	private Location location = null;
+
+	/** Location service */
+	private LocationService locationService;
+
+	/** Selection service */
+	private SelectionService selectionService = null;
+
+	/** Cached sublocation list */
+	private Collection<Location> subLocations;
+
+	public BrowseAction(LotService service, LocationService locationService) {
+		this.service = service;
+		this.locationService = locationService;
+	}
+
+	/** Clear selection */
+	public String clearAll() {
+		this.selectionService.getSelectedList().clearSelection();
+		System.err.println("Selection contains: " + this.selectionService.getSelectedList().getSize());
+		execute();
+		return "refresh";
+	}
+
+	/** Default action: list items in selected location */
+	public String execute() {
+		log.info("Listing Lots pageSize=" + this.pageSize + " startAt=" + this.startAt);
+
+		PagedResult<Lot> results = null;
+		results = this.service.list(location, 0, startAt, pageSize, isShowHiddenLots());
+		if (results != null && results.getResults().size() == 0) {
+			PagedResult<Lot> results2 = null;
+			if (this.location != null && this.location.getChildren().size() > 0 && this.location.getChildren().iterator().next().getChildren().size() == 0)
+				results2 = this.service.list(location, 1, startAt, pageSize, isShowHiddenLots());
+			if (results2 != null && results2.getResults().size() > 0 && results2.getResults().get(0) instanceof InVitroLot)
+				results = results2;
+		}
+
+		this.results = results.getResults();
+		this.totalRecords = results.getTotalHits();
+
+		return Action.SUCCESS;
+	}
+
+	/** Print labels */
+	public String printLabels() {
+		execute();
+
+		try {
+			this.labelService.print(this.results);
+		} catch (PrinterException e) {
+			this.addActionError(e.getMessage());
+			return Action.INPUT;
+		} catch (NoPrinterException e) {
+			this.addActionMessage("Please select your printer at <b>Printer</b> menu. " + e.getMessage());
+			return Action.INPUT;
+		}
+		return "refresh";
+	}
+
+	/**
+	 * @return the labelService
+	 */
+	public LabelService getLabelService() {
+		return this.labelService;
+	}
+
+	/**
+	 * @return the location
+	 */
+	public Location getLocation() {
+		return this.location;
+	}
+
+	/**
+	 * Get full location path
+	 * 
+	 * @return Location path (ROOT > Parent > Parent > this.location)
+	 */
+	public List<Location> getLocationPath() {
+		return this.location == null ? null : this.location.getPath();
+	}
+
+	/**
+	 * @return the locid
+	 */
+	public Long getLocid() {
+		return this.locid;
+	}
+
+	/**
+	 * @return the pageSize
+	 */
+	public int getPageSize() {
+		return this.pageSize;
+	}
+
+	/**
+	 * @return the results
+	 */
+	public List<Lot> getResults() {
+		return this.results;
+	}
+
+	/**
+	 * @return the selectionService
+	 */
+	public SelectionService getSelectionService() {
+		return this.selectionService;
+	}
+
+	/**
+	 * @return the startAt
+	 */
+	public int getStartAt() {
+		return this.startAt;
+	}
+
+	/**
+	 * Get list of sublocations sorted by natural order.
+	 * 
+	 * @return List of sublocations sorted by natural order
+	 */
+	public Collection<Location> getSubLocations() {
+		if (this.subLocations == null) {
+			this.subLocations = this.locationService.getSubLocations(this.location);
+		}
+		return this.subLocations;
+	}
+
+	/**
+	 * @return the totalRecords
+	 */
+	public long getTotalRecords() {
+		return this.totalRecords;
+	}
+
+	/**
+	 * Load location from locid querystring
+	 */
+	public void prepare() {
+		super.prepare();
+		// Load location if location id is provided
+		if (this.locid != null)
+			this.location = this.locationService.load(this.locid);
+	}
+
+	/** Add all lots to selection */
+	public String selectAll() {
+		this.execute();
+		this.selectionService.getSelectedList().addSelection(this.results);
+		System.err.println("Selection contains: " + this.selectionService.getSelectedList().getSize());
+		return "refresh";
+	}
+
+	/**
+	 * @param labelService the labelService to set
+	 */
+	public void setLabelService(LabelService labelService) {
+		this.labelService = labelService;
+	}
+
+	/**
+	 * @param locid the locid to set
+	 */
+	public void setLocid(Long locid) {
+		this.locid = locid;
+	}
+
+	/**
+	 * @param selectionService the selectionService to set
+	 */
+	public void setSelectionService(SelectionService selectionService) {
+		this.selectionService = selectionService;
+	}
+
+	/**
+	 * @param startAt the startAt to set
+	 */
+	public void setStartAt(int startAt) {
+		this.startAt = startAt;
+	}
+}

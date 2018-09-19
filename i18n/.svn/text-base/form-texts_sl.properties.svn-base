@@ -1,0 +1,8 @@
+# Application specific sl_SI texts
+
+form.submit=Pošlji
+form.search=Išči
+
+form.login.domainNote=<b>Napotek:</b> Uporabite svoje omrežno uporabiško ime in geslo.
+form.login.forgotPassword=Don't want to use your domain password or domain password does not work? You can <a href="{0}">generate a password</a> to use only with this application.
+form.login.error=Napačna kombinacija uporabniškega imena in gesla!

@@ -1,0 +1,208 @@
+/**
+ * 
+ */
+package org.iita.inventory.action.admin;
+
+import java.util.List;
+
+import org.iita.inventory.printing.LabelInfo;
+import org.iita.inventory.printing.PrinterInfo;
+import org.iita.inventory.printing.SystemPrinterInfo;
+import org.iita.inventory.service.LabelService;
+import org.iita.inventory.service.PrinterService;
+
+import com.opensymphony.xwork2.Action;
+import com.opensymphony.xwork2.ActionSupport;
+import com.opensymphony.xwork2.Preparable;
+
+/**
+ * Printer action.
+ * 
+ * @author mobreza
+ * 
+ */
+@SuppressWarnings("serial")
+public class PrinterAction extends ActionSupport implements Preparable {
+	private PrinterService printerService;
+	private LabelService labelService;
+	private List<PrinterInfo> results;
+	/** Passed in with querystring */
+	private Integer id;
+	private PrinterInfo printer = new SystemPrinterInfo();
+	private int label;// label info id
+	private List<LabelInfo> labelInfos;
+	private List<String> printServiceNames;
+
+	/**
+	 * @return the results
+	 */
+	public List<PrinterInfo> getResults() {
+		return this.results;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public Integer getId() {
+		return this.id;
+	}
+
+	/**
+	 * @return the printer
+	 */
+	public PrinterInfo getPrinter() {
+		return this.printer;
+	}
+
+	/**
+	 * @param printerService the printerService to set
+	 */
+	public void setPrinterService(PrinterService printerService) {
+		this.printerService = printerService;
+	}
+
+	/**
+	 * @param results the results to set
+	 */
+	public void setResults(List<PrinterInfo> results) {
+		this.results = results;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	/**
+	 * @param printer the printer to set
+	 */
+	public void setPrinter(PrinterInfo printer) {
+		this.printer = printer;
+	}
+
+	public String list() {
+		this.results = this.printerService.list();
+		return Action.SUCCESS;
+	}
+
+	public String newSystem() {
+		// this.printer = new SystemPrinterInfo();
+		return input();
+		// return Action.SUCCESS;
+	}
+
+	public String execute() {
+		return Action.SUCCESS;
+	}
+
+	public String input() {
+		labelInfos = labelService.findAll();
+		return Action.INPUT;
+	}
+
+	public String save() {
+		System.out.println("PrinterAction save() printer " + printer);
+		try {
+			// debug
+			System.out.println("PrinterAction save() printer id " + printer.getId());
+			System.out.println("PrinterAction save() printer version " + printer.getVersion());
+			// System.out.println("PrinterAction save() printer labelinfo" + printer.getLabelInfo().getName());
+			System.out.println("PrinterAction save() printer name " + printer.getName());
+			System.out.println("PrinterAction save() printer location " + printer.getLocation());
+			System.out.println("PrinterAction save() printer allowedipaddresses " + printer.getAllowedIPaddresses());
+
+			printerService.store(printer);
+		} catch (Exception exp) {
+			addActionError(exp.getMessage());
+			return Action.ERROR;
+		}
+
+		return Action.SUCCESS;
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.opensymphony.xwork2.Preparable#prepare()
+	 */
+	@Override
+	public void prepare() {
+		System.out.println("PrinterAction.prepare() id  " + this.id);
+		if (this.id != null) {
+			this.printer = this.printerService.find(this.id);
+		} else {
+
+			LabelInfo labelInfo = labelService.find(label);
+			System.out.println("label info is : " + labelInfo);
+			printer.setLabelInfo(labelInfo);
+			System.out.println("label info set!");
+			labelInfos = labelService.findAll();
+			printServiceNames = printerService.getSystemPrinters();
+			System.out.println("label infos are : " + labelInfos);
+			System.out.println("installed printers are : " + printServiceNames);
+
+		}
+	}
+	
+	/**
+	 * Delete printer service
+	 */
+	public String delete(){
+		if (this.id != null) {
+			this.printerService.deletePrinter(this.id);
+		}
+		if(this.printerService.find(this.id)==null){
+			addActionMessage("Printer deleted successfully.");
+			return Action.SUCCESS;
+		}else{
+			addActionError("Printer failed to be deleted! Try again.");
+			return Action.ERROR;
+		}
+	}
+
+	/**
+	 * @param labelService the labelService to set
+	 */
+	public void setLabelService(LabelService labelService) {
+		this.labelService = labelService;
+	}
+
+	/**
+	 * @return the labelService
+	 */
+	public LabelService getLabelService() {
+		return labelService;
+	}
+
+	/**
+	 * @param label the label to set
+	 */
+	public void setLabel(int label) {
+		this.label = label;
+	}
+
+	/**
+	 * @return the label
+	 */
+	public int getLabel() {
+		return label;
+	}
+
+	/**
+	 * @return the labelInfos
+	 */
+	public List<LabelInfo> getLabelInfos() {
+		return labelInfos;
+	}
+
+	/**
+	 * @return the printerServiceNames
+	 */
+	public List<String> getPrintServiceNames() {
+		return printServiceNames;
+	}
+
+}

@@ -1,0 +1,128 @@
+/**
+ * inventory.Struts Jul 10, 2010
+ */
+package org.iita.inventory.action;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.iita.inventory.model.Lot;
+import org.iita.inventory.model.LotTrial;
+import org.iita.inventory.service.InventoryTrialService;
+import org.iita.inventory.service.LotService;
+import org.iita.trial.action.TrialProfileAction;
+
+/**
+ * @author mobreza
+ */
+@SuppressWarnings("serial")
+public class LotTrialProfileAction extends TrialProfileAction<Lot, LotTrial> {
+	private Long barcode = null;
+	private LotService lotService;
+	private String lotIds;
+	
+	/**
+	 * @param barcode the barcode to set
+	 */
+	public void setBarcode(Long barcode) {
+		this.barcode = barcode;
+	}
+
+	/**
+	 * @param trialService
+	 */
+	public LotTrialProfileAction(InventoryTrialService trialService, LotService lotService) {
+		super(trialService);
+		this.lotService = lotService;
+	}
+
+	/**
+	 * Action method that takes the scanned barcode (through the {@link #barcode} parameter), finds the lot and ensured the lot is to be trialed in this trial.
+	 */
+	public String addEntity() {
+		LOG.info("Ensuring lot with barcode " + barcode + " is registered with trial");
+		if (this.barcode == null) {
+			addActionError("No barcode scanned.");
+			return "refresh";
+		}
+		Lot lot = this.lotService.loadByBarcode(this.barcode);
+		if (lot == null) {
+			addActionError("No lot with barcode: " + this.barcode + " found.");
+			return "refresh";
+		}
+		this.trialService.ensureEntityTrialed(this.trial, lot);
+		addNotificationMessage("Lot " + lot.getId() + " registered with trial <b>" + this.trial.getName() + "</b>");
+		return "refresh";
+	}
+	
+
+	/**
+	 * Form parameter used for bulk import of lots
+	 * 
+	 * @param lotIds the lotIds to set
+	 */
+	public void setLotIds(String lotIds) {
+		this.lotIds = lotIds;
+	}
+
+	/** Add lots to selection */
+	public String addBulk() {
+		if (this.lotIds == null) {
+			addNotificationMessage("No lot IDs specified");
+			return "refresh";
+		}
+
+		String[] ids = this.lotIds.split("[\\s,\\r\\n]+");
+		List<Long> lotNumbers = new ArrayList<Long>();
+		for (String id : ids) {
+			if (id.trim().length() == 0)
+				continue;
+			try {
+				Long lotId = new Long(id);
+				lotNumbers.add(lotId);
+			} catch (NumberFormatException nfe) {
+				addNotificationMessage("Could not parse lot ID: " + id);
+				LOG.info("Could not parse: " + id + " to Long");
+			}
+		}
+		List<Lot> lots = lotService.getLots(lotNumbers);
+		if (lots != null) {
+			for (Lot l : lots) {
+				this.trialService.ensureEntityTrialed(this.trial, l);
+			}
+			addActionMessage("Added lots to trial.");
+		}
+		return "refresh";
+	}
+
+	/** Add lots to selection by barcode */
+	public String addBar() {
+		if (this.lotIds == null) {
+			addNotificationMessage("No lot barcodes specified");
+			return "refresh";
+		}
+
+		String[] ids = this.lotIds.split("[\\s,\\r\\n]+");
+		List<Long> lotBarcodes = new ArrayList<Long>();
+		for (String id : ids) {
+			if (id.trim().length() == 0)
+				continue;
+			try {
+				Long lotId = new Long(id);
+				lotBarcodes.add(lotId);
+			} catch (NumberFormatException nfe) {
+				addNotificationMessage("Could not parse lot ID: " + id);
+				LOG.info("Could not parse barcode: " + id + " to Long");
+			}
+		}
+		List<Lot> lots = lotService.getLotsByBarcode(lotBarcodes);
+		if (lots != null) {
+			for (Lot l : lots) {
+				this.trialService.ensureEntityTrialed(this.trial, l);
+			}
+			addActionMessage("Added lots to trial.");
+		}
+
+		return "refresh";
+	}
+}

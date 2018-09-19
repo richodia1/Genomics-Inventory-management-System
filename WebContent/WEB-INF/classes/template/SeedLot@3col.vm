@@ -1,0 +1,24 @@
+#*
+ Thus begins a multi-line comment. Online visitors won't
+ see this text because the Velocity Templating Engine will
+ ignore it.
+*#
+
+^BY4,3,120^FT0,125^BCN,,N,N,Y
+^FD>;$number.format("00000000", $lot.barCode.id)^FS
+^FO0,140^ADN,40,16^FD${title}^FS
+#if( ${lot.item.alternativeIdentifier} )
+ ^FO0,180^ADN,24,14^FD${lot.item.alternativeIdentifier}^FS
+#end
+^FO0,200^ADN,30,14^FD${lot.item.itemType.name}^FS
+
+#if( $lot.yearProcessed )
+ ^FO270,200^ADN,30,14^FD${lot.yearProcessed}^FS
+#end
+
+#if( $lot.container.id == 10 )
+ ^FO150,200^ADN,30,30^FDENV^FS
+#end
+
+^FO0,240^ADN,13,13^FD${lot.barCode.id}^FS
+^FO320,240^ADN,13,13^FDIITA^FS

@@ -1,0 +1,624 @@
+/**
+ * 
+ */
+package org.iita.inventory.model;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
+import javax.persistence.Transient;
+
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.Store;
+import org.iita.entity.VersionedEntity;
+import org.iita.util.StringUtil;
+
+import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
+
+/**
+ * The Class Lot.
+ * 
+ * @author mobreza
+ */
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@Indexed
+public class Lot extends VersionedEntity {
+	private static final long serialVersionUID = -347942297270471219L;
+
+	/**
+	 * Units of measure
+	 */
+	private static final String[] LOT_UOMS = new String[] { "pcs" };
+
+	/** Item. */
+	private Item item;
+	
+	/** LotVariable. */
+	private Set<LotVariable> lotVariable = new HashSet<LotVariable>();
+
+	/** Lot line */
+	private String line;
+
+	/** Lot location. */
+	private Location location;
+
+	/** Descriptive lot location details */
+	private String locationDetail;
+
+	/** Container. */
+	private ContainerType container;
+
+	/** Quantity. */
+	private Double quantity;
+	private Double initialQuantity;
+
+	/** Scale. */
+	private String scale;
+	private String initialScale;
+
+	/** BarCode. */
+	private BarCode barCode;
+
+	/** Lot status. */
+	private int status = 1; // default to available
+
+	/** Notes. */
+	private String notes;
+
+	/** Lot transactions. */
+	private Set<Transaction2> transactions = new HashSet<Transaction2>();
+
+	/** Migrations. */
+	private Set<Migration> migrations = new HashSet<Migration>();
+
+	private Lot parent1;
+	private ParentType parent1type;
+
+	private List<Lot> children1;
+
+	private List<LotTraitLastValue> traitLastValues;
+	private List<LotTraitValue> traitValues;
+	//private Set<LotVariable> lotVariables = new HashSet<LotVariable>();;
+
+	/** Generation (regeneration count) */
+	private Integer generation;
+	private List<FieldVariables> fieldVariables = new ArrayList<FieldVariables>();
+
+	/**
+	 * Gets the item.
+	 * 
+	 * @return the item
+	 */
+	@ManyToOne(cascade = {}, optional = false)
+	@JoinColumn(name = "item")
+	@IndexedEmbedded
+	public Item getItem() {
+		return this.item;
+	}
+
+	/**
+	 * Sets the item.
+	 * 
+	 * @param item the item to set
+	 */
+	public void setItem(Item item) {
+		this.item = item;
+	}
+	
+	/**
+	 * Gets the lotVariable.
+	 * 
+	 * @return the lotVariable
+	 */
+	@OneToMany(cascade = {}, mappedBy = "lot")
+	public Set<LotVariable> getLotVariable() {
+		return this.lotVariable;
+	}
+
+	/**
+	 * Sets the lotVariable.
+	 * 
+	 * @param item the lotVariable to set
+	 */
+	public void setLotVariable(Set<LotVariable> lotVariable) {
+		this.lotVariable = lotVariable;
+	}
+
+	/**
+	 * Get lot line (variant)
+	 * 
+	 * @return the line
+	 */
+	@Column(length = 20)
+	public String getLine() {
+		return this.line;
+	}
+
+	/**
+	 * Set lot line (variant)
+	 * 
+	 * @param line the line to set
+	 */
+	public void setLine(String line) {
+		this.line = line;
+	}
+
+	/**
+	 * Gets the location.
+	 * 
+	 * @return the location
+	 */
+	@ManyToOne(optional = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "location")
+	// @Field(index = Index.TOKENIZED, store = Store.NO)
+	// @FieldBridge(impl = org.iita.inventory.lucene.LocationBridge.class)
+	// @IndexedEmbedded
+	public Location getLocation() {
+		return this.location;
+	}
+
+	/**
+	 * Sets the location.
+	 * 
+	 * @param location the location to set
+	 */
+	public void setLocation(Location location) {
+		this.location = location;
+	}
+
+	/**
+	 * Gets the container.
+	 * 
+	 * @return the container
+	 */
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "container")
+	@TypeConversion(converter = "genericConverter")
+	public ContainerType getContainer() {
+		return this.container;
+	}
+
+	/**
+	 * Sets the container.
+	 * 
+	 * @param container the container to set
+	 */
+	public void setContainer(ContainerType container) {
+		this.container = container;
+	}
+
+	/**
+	 * Gets the quantity.
+	 * 
+	 * @return the quantity
+	 */
+	@Column(nullable = false)
+	public Double getQuantity() {
+		return this.quantity;
+	}
+
+	/**
+	 * Sets the quantity.
+	 * 
+	 * @param quantity the quantity to set
+	 */
+	public void setQuantity(Double quantity) {
+		this.quantity = quantity;
+	}
+
+	/**
+	 * Gets the scale.
+	 * 
+	 * @return the scale
+	 */
+	@Column(length = 10, nullable = false)
+	public String getScale() {
+		return this.scale;
+	}
+
+	/**
+	 * Sets the scale.
+	 * 
+	 * @param scale the scale to set
+	 */
+	public void setScale(String scale) {
+		this.scale = scale;
+	}
+
+	/**
+	 * Gets the bar code.
+	 * 
+	 * @return the barCode
+	 */
+	@OneToOne(cascade = {}, mappedBy = "lot", fetch = FetchType.LAZY)
+	public BarCode getBarCode() {
+		return this.barCode;
+	}
+
+	/**
+	 * Sets the bar code.
+	 * 
+	 * @param barCode the barCode to set
+	 */
+	public void setBarCode(BarCode barCode) {
+		this.barCode = barCode;
+	}
+
+	/**
+	 * Gets the notes.
+	 * 
+	 * @return the notes
+	 */
+	@Lob
+	@Field(index = Index.TOKENIZED, store = Store.NO)
+	public String getNotes() {
+		return this.notes;
+	}
+
+	/**
+	 * Sets the notes.
+	 * 
+	 * @param notes the notes to set
+	 */
+	public void setNotes(String notes) {
+		this.notes = notes;
+	}
+
+	/**
+	 * Gets the status. 0 -- unknown, 1 -- available, -3 -- missing, -100 -- deleted
+	 * 
+	 * @return the status
+	 */
+	public int getStatus() {
+		return this.status;
+	}
+
+	/**
+	 * Sets the status.
+	 * 
+	 * @param status the status to set
+	 */
+	public void setStatus(int status) {
+		this.status = status;
+	}
+
+	/**
+	 * Gets the transactions.
+	 * 
+	 * @return the transactions
+	 */
+	@OneToMany(cascade = {}, mappedBy = "lot")
+	@OrderBy("date")
+	public Set<Transaction2> getTransactions() {
+		return this.transactions;
+	}
+
+	/**
+	 * Sets the transactions.
+	 * 
+	 * @param transactions the transactions to set
+	 */
+	public void setTransactions(Set<Transaction2> transactions) {
+		this.transactions = transactions;
+	}
+
+	/**
+	 * Add a migration to lot.
+	 * 
+	 * @param migration the migration
+	 * @see Transaction2
+	 */
+	public void addMigration(Migration migration) {
+		migration.setLot(this);
+		this.migrations.add(migration);
+	}
+
+	/**
+	 * Gets the migrations.
+	 * 
+	 * @return the migrations
+	 */
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "lot")
+	@OrderBy("migrationDate")
+	public Set<Migration> getMigrations() {
+		return this.migrations;
+	}
+
+	/**
+	 * Sets the migrations.
+	 * 
+	 * @param migrations the migrations to set
+	 */
+	public void setMigrations(Set<Migration> migrations) {
+		this.migrations = migrations;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return this.item + " " + this.quantity + " " + this.scale + " @ " + this.location;
+	}
+
+	/**
+	 * Copy from.
+	 * 
+	 * @param lot the lot
+	 */
+	public void copyFrom(Lot lot) {
+		this.container = lot.getContainer();
+		this.item = lot.getItem();
+		this.location = lot.getLocation();
+		this.quantity = 0.0;
+		this.scale = lot.scale;
+		this.parent1 = lot;
+		this.parent1type = ParentType.SAME;
+		this.line = lot.line;
+
+		// Increase generation
+		if (lot.generation != null)
+			this.generation = lot.generation + 1;
+	}
+
+	/**
+	 * Update or add a viability test record to this lot
+	 * 
+	 * @param viability Viability test results
+	 */
+	//	public void setLastViability(Viability viability) {
+	//		// nothing to do
+	//		if (viability == null)
+	//			return;
+	//
+	//		// find existing viability with same test date
+	//		Viability existingViability = getViability(viability.getTestDate());
+	//		if (existingViability != null) {
+	//			// update existing
+	//			existingViability.setViability(viability.getViability());
+	//		} else {
+	//			// add new
+	//			addViabilityResult(viability);
+	//		}
+	//	}
+	/**
+	 * Add viability testing result to this lot
+	 * 
+	 * @param viability
+	 */
+	//	public void addViabilityResult(Viability viability) {
+	//		if (viability == null)
+	//			return;
+	//		viability.setLot(this);
+	//		this.getViabilityResults().add(viability);
+	//	}
+	/**
+	 * Find Viability record with matching test date
+	 * 
+	 * @param testDate
+	 * @return
+	 */
+	//	private Viability getViability(Date testDate) {
+	//		List<Viability> viab = this.getViabilityResults();
+	//		if (viab == null || viab.size() == 0)
+	//			return null;
+	//		// Find viability results with matching test date
+	//		for (Viability viability : viab) {
+	//			if (viability.getTestDate().compareTo(testDate) == 0)
+	//				return viability;
+	//		}
+	//		// No such viability
+	//		return null;
+	//	}
+	/**
+	 * Get all child lots where this Lot is parent 1
+	 * 
+	 * @return
+	 */
+	@OneToMany(cascade = {}, mappedBy = "parent1")
+	public List<Lot> getChildren1() {
+		return this.children1;
+	}
+
+	/**
+	 * @param children1 the children1 to set
+	 */
+	public void setChildren1(List<Lot> children1) {
+		this.children1 = children1;
+	}
+
+	/**
+	 * Get lot parent
+	 * 
+	 * @return the parent1
+	 */
+	@ManyToOne(cascade = {}, optional = true)
+	public Lot getParent1() {
+		return this.parent1;
+	}
+
+	/**
+	 * @param parent1 the parent1 to set
+	 */
+	public void setParent1(Lot parent1) {
+		this.parent1 = parent1;
+	}
+
+	/**
+	 * @return the parent1type
+	 */
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = true)
+	public ParentType getParent1type() {
+		return this.parent1type;
+	}
+
+	/**
+	 * @param parent1type the parent1type to set
+	 */
+	public void setParent1type(ParentType parent1type) {
+		this.parent1type = parent1type;
+	}
+
+	/**
+	 * Parent types
+	 * 
+	 * @author mobreza
+	 */
+	public enum ParentType {
+		/** Same as parent */
+		SAME,
+		/** Regenerated from parent */
+		REGENERATED
+		/** Male parent, Female parent, etc */
+	}
+
+	/**
+	 * @return the locationDetail
+	 */
+	@Column(length = 200, nullable = true)
+	public String getLocationDetail() {
+		return this.locationDetail;
+	}
+
+	/**
+	 * @param locationDetail the locationDetail to set
+	 */
+	public void setLocationDetail(String locationDetail) {
+		this.locationDetail = StringUtil.nullOrString(locationDetail);
+	}
+
+	/**
+	 * @return the initialQuantity
+	 */
+	public Double getInitialQuantity() {
+		return this.initialQuantity;
+	}
+
+	/**
+	 * @param initialQuantity the initialQuantity to set
+	 */
+	public void setInitialQuantity(Double initialQuantity) {
+		this.initialQuantity = initialQuantity;
+	}
+
+	/**
+	 * @return the initialScale
+	 */
+	@Column(length = 10, nullable = true)
+	public String getInitialScale() {
+		return this.initialScale;
+	}
+
+	/**
+	 * @param initialScale the initialScale to set
+	 */
+	public void setInitialScale(String initialScale) {
+		this.initialScale = initialScale;
+	}
+
+	@Transient
+	public String[] getUoms() {
+		return LOT_UOMS;
+	}
+
+	/**
+	 * @return the traitLastValues
+	 */
+	@OneToMany(cascade = {}, mappedBy = "entity", fetch = FetchType.LAZY)
+	public List<LotTraitLastValue> getTraitLastValues() {
+		return this.traitLastValues;
+	}
+
+	/**
+	 * @param traitLastValues the traitLastValues to set
+	 */
+	public void setTraitLastValues(List<LotTraitLastValue> traitLastValues) {
+		this.traitLastValues = traitLastValues;
+	}
+
+	/**
+	 * @return the lotVariables
+	 */
+	//@OneToMany(cascade = {}, mappedBy = "lot")
+	//@OrderBy("variable")
+	//public Set<LotVariable> getLotVariables() {
+	//	return lotVariables;
+	//}
+
+	/**
+	 * @param lotVariables the lotVariables to set
+	 */
+	//public void setLotVariables(Set<LotVariable> lotVariables) {
+	//	this.lotVariables = lotVariables;
+	//}
+
+	/**
+	 * @return the traitValues
+	 */
+	@OneToMany(cascade = {}, mappedBy = "entity", fetch = FetchType.LAZY)
+	public List<LotTraitValue> getTraitValues() {
+		return this.traitValues;
+	}
+
+	/**
+	 * @param traitValues the traitValues to set
+	 */
+	public void setTraitValues(List<LotTraitValue> traitValues) {
+		this.traitValues = traitValues;
+	}
+
+	/**
+	 * Get lot generation (regeneration count)
+	 * 
+	 * @return the generation
+	 */
+	public Integer getGeneration() {
+		return this.generation;
+	}
+
+	/**
+	 * Set lot generation (regeneration count)
+	 * 
+	 * @param generation the generation to set
+	 */
+	public void setGeneration(Integer generation) {
+		this.generation = generation;
+	}
+
+	/**
+	 * @param fieldVariables the fieldVariables to set
+	 */
+	public void setFieldVariables(List<FieldVariables> fieldVariables) {
+		this.fieldVariables = fieldVariables;
+	}
+
+	/**
+	 * @return the fieldVariables
+	 */
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "lot")
+	public List<FieldVariables> getFieldVariables() {
+		return fieldVariables;
+	}
+}
